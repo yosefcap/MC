@@ -69,9 +69,9 @@ keyword parameters `kwargs`.
 function DQMC_bond(m::M; seed::Int=-1, kwargs...) where M<:Model
 
     p = DQMC_bondParameters(; kwargs...)
-    geltype = greenseltype(DQMC, m)
+    geltype = greenseltype(DQMC_bond, m)
     conf = rand(DQMC_bond, m, p.slices)
-    mc = DQMC_bond{M, typeof(conf), DQMCStack{geltype,Float64}}()
+    mc = DQMC_bond{M, typeof(conf), DQMC_bondStack{geltype,Float64}}()
     mc.model = m
     mc.p = p
     mc.s = DQMC_bondStack{geltype,Float64}()

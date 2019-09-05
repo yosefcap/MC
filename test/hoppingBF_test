@@ -2,8 +2,8 @@ using MonteCarlo
 using Test
 
 #@testset DQMC.jl begin
-m = HubbardModelAttractive(dims=2,L=8)
-mc=DQMC(m,beta=1)
+m = HoppingBFModel(dims=2,L=8)
+mc=DQMC_bond(m,beta=1,J=1, h=0.2)
 run!(mc, sweeps=10, thermalization=10, verbose=true);
 
 #end

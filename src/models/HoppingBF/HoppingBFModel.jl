@@ -74,7 +74,7 @@ and store it in `result::Matrix`.
 
 This is a performance critical method.
 """
-@inline function interaction_matrix_exp!(mc::DQMC, m::HoppingBFModel,
+@inline function interaction_matrix_exp!(mc::DQMC_bond, m::HoppingBFModel,
             result::Matrix, conf::HBFConf, slice::Int, power::Float64=1.)
     dtau = mc.p.delta_tau
     lambda = acosh(exp(m.U * dtau/2))
@@ -116,8 +116,8 @@ end
     return detratio, ΔE_boson, Δ,g
 end
 
-@inline function accept_local!(mc::DQMC, m::HoppingBFModel, n::Int, cb::Int,
-            slice::Int, conf::HubbardConf, Δ, detratio, ΔE_boson::Float64)
+@inline function accept_local!(mc::DQMC_bond, m::HoppingBFModel, n::Int, cb::Int,
+            slice::Int, conf::HBFConf, Δ, detratio, ΔE_boson::Float64)
     greens = mc.s.greens
     t = m.t
     α = m.α
@@ -148,16 +148,17 @@ end
 """
 Green's function is real for the attractive Hubbard model.
 """
-@inline greenseltype(::Type{DQMC}, m::HubbardModelAttractive) = Float64
+@inline greenseltype(::Type{DQMC_bond}, m::HoppingBFModel) = Float64
 
 
 """
 Calculate energy contribution of the boson, i.e. Hubbard-Stratonovich/Hirsch field.
 """
+#=
 @inline function energy_boson(m::HubbardModelAttractive, hsfield::HubbardConf)
   dtau = mc.p.delta_tau
     lambda = acosh(exp(m.U * dtau/2))
     return lambda * sum(hsfield)
 end
-
+=#
 include("observables_bond.jl")
