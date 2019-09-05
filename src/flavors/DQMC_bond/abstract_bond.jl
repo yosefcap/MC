@@ -1,4 +1,4 @@
-abstract type AbstractDQMCStack end
+abstract type AbstractDQMC_bondStack end
 
 abstract type Checkerboard end
 struct CheckerboardTrue <: Checkerboard end

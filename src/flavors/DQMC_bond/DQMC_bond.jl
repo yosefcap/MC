@@ -1,4 +1,4 @@
-include("abstract.jl")
+include("abstract_bond.jl")
 
 """
 Analysis data of determinant quantum Monte Carlo (DQMC) simulation
@@ -43,7 +43,7 @@ Determinant quantum Monte Carlo (DQMC_bond) simulation
 """
 #mutable struct DQMC_bond{M<:Model, CB<:Checkerboard, ConfType<:Any,
 mutable struct DQMC_bond{M<:Model, ConfType<:Any,
-            Stack<:AbstractDQMCStack} <: MonteCarloFlavor
+            Stack<:AbstractDQMC_bondStack} <: MonteCarloFlavor
     model::M
     conf::ConfType
     hopping_mat::ConfType
@@ -54,7 +54,7 @@ mutable struct DQMC_bond{M<:Model, ConfType<:Any,
     obs::Dict{String, Observable}
 
     #DQMC_bond{M, CB, ConfType, Stack}() where {M<:Model, CB<:Checkerboard,
-    DQMC_bond{M, ConfType, Stack}() where {M<:Model, ConfType<:Any, Stack<:AbstractDQMCStack} = new()
+    DQMC_bond{M, ConfType, Stack}() where {M<:Model, ConfType<:Any, Stack<:AbstractDQMC_bondStack} = new()
 end
 
 include("stack_bond.jl")
@@ -74,7 +74,7 @@ function DQMC_bond(m::M; seed::Int=-1, kwargs...) where M<:Model
     mc = DQMC_bond{M, typeof(conf), DQMCStack{geltype,Float64}}()
     mc.model = m
     mc.p = p
-    mc.s = DQMCStack{geltype,Float64}()
+    mc.s = DQMC_bondStack{geltype,Float64}()
 
     init!(mc, seed=seed, conf=conf)
     return mc
@@ -93,23 +93,23 @@ DQMC_bond(m::Model, params::NamedTuple) = DQMC_bond(m; params...)
 
 
 # convenience
-@inline beta(mc::DQMC) = mc.p.beta
-@inline nslices(mc::DQMC) = mc.p.slices
-@inline model(mc::DQMC) = mc.model
-@inline conf(mc::DQMC) = mc.conf
-@inline current_slice(mc::DQMC) = mc.s.current_slice
+@inline beta(mc::DQMC_bond) = mc.p.beta
+@inline nslices(mc::DQMC_bond) = mc.p.slices
+@inline model(mc::DQMC_bond) = mc.model
+@inline conf(mc::DQMC_bond) = mc.conf
+@inline current_slice(mc::DQMC_bond) = mc.s.current_slice
 
 
 # cosmetics
 import Base.summary
 import Base.show
-Base.summary(mc::DQMC) = "DQMC simulation of $(summary(mc.model))"
-function Base.show(io::IO, mc::DQMC)
+Base.summary(mc::DQMC_bond) = "DQMC_bond simulation of $(summary(mc.model))"
+function Base.show(io::IO, mc::DQMC_bond)
     print(io, "Determinant quantum Monte Carlo simulation\n")
     print(io, "Model: ", mc.model, "\n")
     print(io, "Beta: ", mc.p.beta, " (T ≈ $(round(1/mc.p.beta, sigdigits=3)))")
 end
-Base.show(io::IO, m::MIME"text/plain", mc::DQMC) = print(io, mc)
+Base.show(io::IO, m::MIME"text/plain", mc::DQMC_bond) = print(io, mc)
 
 
 """
@@ -118,14 +118,14 @@ Base.show(io::IO, m::MIME"text/plain", mc::DQMC) = print(io, mc)
 Initialize the determinant quantum Monte Carlo simulation `mc`.
 If `seed !=- 1` the random generator will be initialized with `Random.seed!(seed)`.
 """
-function init!(mc::DQMC; seed::Real=-1, conf=rand(DQMC,model(mc),nslices(mc)))
+function init!(mc::DQMC_bond; seed::Real=-1, conf=rand(DQMC_bond,model(mc),nslices(mc)))
     seed == -1 || Random.seed!(seed)
 
     mc.conf = conf
     mc.hopping_mat = init_hopping_matrices(mc, mc.model)
     initialize_stack(mc)
     mc.obs = prepare_observables(mc, mc.model)
-    mc.a = DQMCAnalysis()
+    mc.a = DQMC_bondAnalysis()
     nothing
 end
 
@@ -135,7 +135,7 @@ end
 Runs the given Monte Carlo simulation `mc`.
 Progress will be printed to `stdout` if `verbose=true` (default).
 """
-function run!(mc::DQMC; verbose::Bool=true, sweeps::Int=mc.p.sweeps,
+function run!(mc::DQMC_bond; verbose::Bool=true, sweeps::Int=mc.p.sweeps,
     thermalization=mc.p.thermalization)
     total_sweeps = sweeps + thermalization
 
@@ -146,7 +146,9 @@ function run!(mc::DQMC; verbose::Bool=true, sweeps::Int=mc.p.sweeps,
     verbose && println("Preparing Green's function stack")
     initialize_stack(mc) # redundant ?!
     build_stack(mc)
-    propagate(mc)
+    for cb in 1:4
+        propagate(mc,cb)
+    end
 
     _time = time()
     verbose && println("\n\nThermalization stage - ", thermalization)
@@ -211,12 +213,12 @@ function update(mc::DQMC_bond, i::Int)
 end
 
 """
-    sweep_spatial(mc::DQMC)
+    sweep_spatial(mc::DQMC_bond,cb::Int)
 
 Performs a sweep of local moves along spatial dimension at current
 imaginary time slice.
 """
-function sweep_spatial(mc::DQMC, Int::cb)
+function sweep_spatial(mc::DQMC, cb::Int)
 
     m = model(mc)
     N = div(nsites(m),2) # number of bonds in a checkerboard
@@ -234,7 +236,7 @@ function sweep_spatial(mc::DQMC, Int::cb)
 
         # Metropolis
         if p > 1 || rand() < p
-            accept_local!(mc, m, i, cb current_slice(mc), conf(mc), Δ, detratio,
+            accept_local!(mc, m, i, cb, current_slice(mc), conf(mc), Δ, detratio,
                 ΔE_boson)
             mc.a.acc_rate += 1/N
             mc.a.acc_local += 1

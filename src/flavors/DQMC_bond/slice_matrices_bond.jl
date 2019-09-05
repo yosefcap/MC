@@ -24,6 +24,7 @@ end
 
 
 # CheckerboardTrue
+#=
 const DQMC_CBTrue = DQMC{M, CheckerboardTrue} where M
 
 function slice_matrix(mc::DQMC_CBTrue, m::Model, slice::Int, power::Float64=1.)
@@ -35,18 +36,20 @@ function slice_matrix(mc::DQMC_CBTrue, m::Model, slice::Int, power::Float64=1.)
   end
   return M
 end
+=#
 function multiply_slice_matrix_left!(mc::DQMC_bond, m::Model, cb::Int, slice::Int, M::AbstractMatrix{T}) where T<:Number
     bond_ch = m.bond_checkerboard
     hopping_mat = mc.hopping_mat#[:,:,n,slice,cb]
     N=size(hopping_mat,3) #number of bonds in checkerboard
     @inbounds @views begin
-    for n in 1:N
-        i = bond_ch[2,n,cb]
-        j = bond_ch[3,n,cb]
-        B = hopping_mat[:,:,n,slice,cb]*[M[i,:]' ; M[j,:]']
-        M[i,:] = B[1,:]
-        M[j,:] = B[2,:]
-    end
+	    for n in 1:N
+	        i = bond_ch[2,n,cb]
+	        j = bond_ch[3,n,cb]
+	        B = hopping_mat[:,:,n,slice,cb]*[M[i,:]' ; M[j,:]']
+	        M[i,:] = B[1,:]
+	        M[j,:] = B[2,:]
+	    end
+	end
     nothing
 end
 function multiply_slice_matrix_right!(mc::DQMC_bond, m::Model, cb::Int, slice::Int, M::AbstractMatrix{T}) where T<:Number
@@ -54,13 +57,14 @@ function multiply_slice_matrix_right!(mc::DQMC_bond, m::Model, cb::Int, slice::I
     hopping_mat = mc.hopping_mat#[:,:,n,slice,cb]
     N=size(hopping_mat,3) #number of bonds in checkerboard
     @inbounds @views begin
-    for n in 1:N
-        i = bond_ch[2,n,cb]
-        j = bond_ch[3,n,cb]
-        B = [M[i,:]  M[j,:]]*hopping_mat[:,:,n,slice,cb]
-        M[:,i] = B[:,1]
-        M[:,j] = B[:,2]
-    end
+	    for n in 1:N
+	        i = bond_ch[2,n,cb]
+	        j = bond_ch[3,n,cb]
+	        B = [M[i,:]  M[j,:]]*hopping_mat[:,:,n,slice,cb]
+	        M[:,i] = B[:,1]
+	        M[:,j] = B[:,2]
+	    end
+	end
     nothing
 end
 function multiply_slice_matrix_inv_left!(mc::DQMC_bond, m::Model, cb::Int, slice::Int, M::AbstractMatrix{T}) where T<:Number
@@ -69,18 +73,19 @@ function multiply_slice_matrix_inv_left!(mc::DQMC_bond, m::Model, cb::Int, slice
     N=size(hopping_mat,3) #number of bonds in checkerboard
     h_inv = zeros(Float64,2,2)
     @inbounds @views begin
-    for n in 1:N
-        i = bond_ch[2,n,cb]
-        j = bond_ch[3,n,cb]
+	    for n in 1:N
+	        i = bond_ch[2,n,cb]
+	        j = bond_ch[3,n,cb]
 
-        h_inv[1,1]=hopping_mat[1,1,n,slice,cb]
-        h_inv[2,2]=hopping_mat[2,2,n,slice,cb]
-        h_inv[1,2]=-hopping_mat[1,2,n,slice,cb]
-        h_inv[2,1]=-hopping_mat[2,1,n,slice,cb]
-        B = h_inv*[M[i,:]' ; M[j,:]']
-        M[i,:] = B[1,:]
-        M[j,:] = B[2,:]
-    end
+	        h_inv[1,1]=hopping_mat[1,1,n,slice,cb]
+	        h_inv[2,2]=hopping_mat[2,2,n,slice,cb]
+	        h_inv[1,2]=-hopping_mat[1,2,n,slice,cb]
+	        h_inv[2,1]=-hopping_mat[2,1,n,slice,cb]
+	        B = h_inv*[M[i,:]' ; M[j,:]']
+	        M[i,:] = B[1,:]
+	        M[j,:] = B[2,:]
+	    end
+	end
     nothing
 end
 function multiply_slice_matrix_inv_right!(mc::DQMC_bond, m::Model, cb::Int, slice::Int, M::AbstractMatrix{T}) where T<:Number
@@ -89,17 +94,18 @@ function multiply_slice_matrix_inv_right!(mc::DQMC_bond, m::Model, cb::Int, slic
     N=size(hopping_mat,3) #number of bonds in checkerboard
     h_inv = zeros(Float64,2,2)
     @inbounds @views begin
-    for n in 1:N
-        i = bond_ch[2,n,cb]
-        j = bond_ch[3,n,cb]
-        h_inv[1,1]=hopping_mat[1,1,n,slice,cb]
-        h_inv[2,2]=hopping_mat[2,2,n,slice,cb]
-        h_inv[1,2]=-hopping_mat[1,2,n,slice,cb]
-        h_inv[2,1]=-hopping_mat[2,1,n,slice,cb]
-        B = [M[i,:]  M[j,:]]*h_inv
-        M[:,i] = B[:,1]
-        M[:,j] = B[:,2]
-    end
+	    for n in 1:N
+	        i = bond_ch[2,n,cb]
+	        j = bond_ch[3,n,cb]
+	        h_inv[1,1]=hopping_mat[1,1,n,slice,cb]
+	        h_inv[2,2]=hopping_mat[2,2,n,slice,cb]
+	        h_inv[1,2]=-hopping_mat[1,2,n,slice,cb]
+	        h_inv[2,1]=-hopping_mat[2,1,n,slice,cb]
+	        B = [M[i,:]  M[j,:]]*h_inv
+	        M[:,i] = B[:,1]
+	        M[:,j] = B[:,2]
+	    end
+	end
     nothing
 end
 function multiply_daggered_slice_matrix_left!(mc::DQMC_bond, m::Model, cb::Int, slice::Int, M::AbstractMatrix{T}) where T<:Number
@@ -107,13 +113,14 @@ function multiply_daggered_slice_matrix_left!(mc::DQMC_bond, m::Model, cb::Int, 
     hopping_mat = mc.hopping_mat#[:,:,n,slice,cb]
     N=size(hopping_mat,3) #number of bonds in checkerboard
     @inbounds @views begin
-    for n in 1:N
-        i = bond_ch[2,n,cb]
-        j = bond_ch[3,n,cb]
-        B = adjoint(hopping_mat[:,:,n,slice,cb])*[M[i,:]' ; M[j,:]']
-        M[i,:] = B[1,:]
-        M[j,:] = B[2,:]
-    end
+	    for n in 1:N
+	        i = bond_ch[2,n,cb]
+	        j = bond_ch[3,n,cb]
+	        B = adjoint(hopping_mat[:,:,n,slice,cb])*[M[i,:]' ; M[j,:]']
+	        M[i,:] = B[1,:]
+	        M[j,:] = B[2,:]
+	    end
+	end
     nothing
 end
 function multiply_daggered_slice_matrix_right!(mc::DQMC_bond, m::Model, cb::Int, slice::Int, M::AbstractMatrix{T}) where T<:Number
@@ -121,12 +128,13 @@ function multiply_daggered_slice_matrix_right!(mc::DQMC_bond, m::Model, cb::Int,
     hopping_mat = mc.hopping_mat#[:,:,n,slice,cb]
     N=size(hopping_mat,3) #number of bonds in checkerboard
     @inbounds @views begin
-    for n in 1:N
-        i = bond_ch[2,n,cb]
-        j = bond_ch[3,n,cb]
-        B = [M[i,:]  M[j,:]]*adjoint(hopping_mat[:,:,n,slice,cb])
-        M[:,i] = B[:,1]
-        M[:,j] = B[:,2]
-    end
+	    for n in 1:N
+	        i = bond_ch[2,n,cb]
+	        j = bond_ch[3,n,cb]
+	        B = [M[i,:]  M[j,:]]*adjoint(hopping_mat[:,:,n,slice,cb])
+	        M[:,i] = B[:,1]
+	        M[:,j] = B[:,2]
+	    end
+	end
     nothing
 end

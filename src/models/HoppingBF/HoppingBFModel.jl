@@ -2,19 +2,16 @@ const HBFConf = Array{Int8, 2} # conf === hsfield === discrete Hubbard Stratonov
 const HBFDistribution = Int8[-1,1]
 
 """
-Famous attractive (negative U) Hubbard model on a cubic lattice.
-Discrete Hubbard Stratonovich transformation (Hirsch transformation) in the density/charge channel,
-such that HS-field is real.
+    HoppingBFModel(; dims, L[, kwargs...])
 
-    HubbardModelAttractive(; dims, L[, kwargs...])
-
-Create an attractive Hubbard model on `dims`-dimensional cubic lattice
+Create an Hopping Boson Fermion model on `dims`-dimensional cubic lattice
 with linear system size `L`. Additional allowed `kwargs` are:
 
  * `mu::Float64=0.0`: chemical potential
- * `U::Float64=1.0`: onsite interaction strength, "Hubbard U"
+ * `α::Float64 = 1.0`: Boson-Fermion coupling
  * `t::Float64=1.0`: hopping energy
 """
+
 @with_kw_noshow struct HoppingBFModel{C<:AbstractCubicLattice} <: Model
     # user mandatory
     dims::Int
@@ -29,7 +26,7 @@ with linear system size `L`. Additional allowed `kwargs` are:
     l::C = choose_lattice(HoppingBFModel, dims, L)
     neighs::Matrix{Int} = neighbors_lookup_table(l)
     bond_info::Matrix{Int} = bond_lookup_table(l)
-    bond_checkerboard::{Int} = bond_checkerboard_table(l)
+    bond_checkerboard::Array{Int, 3} = bond_checkerboard_table(l)
     flv::Int = 1
 end
 
@@ -97,7 +94,7 @@ end
     bond_info = m.bond_info
     forwards = mod(slice,num_slices)+1
     backwards = mod(slice-2,num_slices)+1
-    for
+
     c_α = cosh(2*α)-1
     s_α = sinh(2*α)
     if conf[n,slice]==1 #+ to -
@@ -116,7 +113,6 @@ end
     g = [1-greens[i,i] -greens[i,j] ; -greens[j,i] 1-greens[j,j]]
 
     detratio = det(I + Δ*g)^2 # squared because of two spin sectors.
-    ΔE_boson =
     return detratio, ΔE_boson, Δ,g
 end
 
@@ -128,12 +124,12 @@ end
     i = m.bond_info[2,n]
     j = m.bond_info[3,n]
     g = [1-greens[i,i] -greens[i,j] ; -greens[j,i] 1-greens[j,j]]
-    ̃Λ = inv( inv(Δ) + g )
+    Λred = inv( inv(Δ) + g )
     Λ = zeros(size(green))
-    Λ[i,i] = ̃Λ[1,1]
-    Λ[i,j] = ̃Λ[1,2]
-    Λ[j,i] = ̃Λ[2,1]
-    Λ[j,j] = ̃Λ[2,2]
+    Λ[i,i] = Λred[1,1]
+    Λ[i,j] = Λred[1,2]
+    Λ[j,i] = Λred[2,1]
+    Λ[j,j] = Λred[2,2]
     greens = greens*(I-Λ*greens)
 
     conf[n, slice] *= -1
@@ -164,4 +160,4 @@ Calculate energy contribution of the boson, i.e. Hubbard-Stratonovich/Hirsch fie
     return lambda * sum(hsfield)
 end
 
-include("observables.jl")
+include("observables_bond.jl")

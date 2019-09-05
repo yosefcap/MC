@@ -1,5 +1,5 @@
 # type
-mutable struct DQMCStack{GreensEltype<:Number, HoppingEltype<:Number} <: AbstractDQMCStack
+mutable struct DQMC_bondStack{GreensEltype<:Number, HoppingEltype<:Number} <: AbstractDQMC_bondStack
   eye_flv::Matrix{Float64}
   eye_full::Matrix{Float64}
   ones_vec::Vector{Float64}
@@ -66,7 +66,7 @@ mutable struct DQMCStack{GreensEltype<:Number, HoppingEltype<:Number} <: Abstrac
   chkr_mu_inv::SparseMatrixCSC{HoppingEltype, Int64}
 
 
-  DQMCStack{GreensEltype, HoppingEltype}() where {GreensEltype<:Number, HoppingEltype<:Number} = begin
+  DQMC_bondStack{GreensEltype, HoppingEltype}() where {GreensEltype<:Number, HoppingEltype<:Number} = begin
     # @assert isleaftype(GreensEltype);
     # @assert isleaftype(HoppingEltype);
     @assert isconcretetype(GreensEltype);
@@ -76,13 +76,13 @@ mutable struct DQMCStack{GreensEltype<:Number, HoppingEltype<:Number} <: Abstrac
 end
 
 # type helpers
-geltype(::Type{DQMCStack{G,H}}) where {G,H} = G
-heltype(::Type{DQMCStack{G,H}}) where {G,H} = H
-geltype(mc::DQMC{M, CB, CT, S}) where {M, CB, CT, S} = geltype(S)
-heltype(mc::DQMC{M, CB, CT, S}) where {M, CB, CT, S} = heltype(S)
+geltype(::Type{DQMC_bondStack{G,H}}) where {G,H} = G
+heltype(::Type{DQMC_bondStack{G,H}}) where {G,H} = H
+geltype(mc::DQMC_bond{M, CT, S}) where {M,  CT, S} = geltype(S)
+heltype(mc::DQMC_bond{M, CT, S}) where {M,  CT, S} = heltype(S)
 
 # type initialization
-function initialize_stack(mc::DQMC)
+function initialize_stack(mc::DQMC_bond)
   GreensEltype = geltype(mc)
   HoppingEltype = heltype(mc)
   N = mc.model.l.sites
