@@ -1,0 +1,9 @@
+using MonteCarlo
+using Test
+
+#@testset DQMC.jl begin
+m = HubbardModelAttractive(dims=2,L=8)
+mc=DQMC(m,beta=1)
+run!(mc, sweeps=10, thermalization=10, verbose=true);
+
+#end

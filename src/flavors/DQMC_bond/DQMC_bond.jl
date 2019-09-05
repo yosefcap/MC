@@ -3,7 +3,7 @@ include("abstract.jl")
 """
 Analysis data of determinant quantum Monte Carlo (DQMC) simulation
 """
-@with_kw mutable struct DQMCAnalysis
+@with_kw mutable struct DQMC_bondAnalysis
     acc_rate::Float64 = 0.
     prop_local::Int = 0
     acc_local::Int = 0
@@ -15,7 +15,7 @@ end
 """
 Parameters of determinant quantum Monte Carlo (DQMC)
 """
-@with_kw struct DQMCParameters
+@with_kw struct DQMC_bondParameters
     global_moves::Bool = false
     global_rate::Int = 5
     thermalization::Int = 100 # number of thermalization sweeps
@@ -49,16 +49,16 @@ mutable struct DQMC_bond{M<:Model, ConfType<:Any,
     hopping_mat::ConfType
     s::Stack
 
-    p::DQMCParameters
-    a::DQMCAnalysis
+    p::DQMC_bondParameters
+    a::DQMC_bondAnalysis
     obs::Dict{String, Observable}
 
     #DQMC_bond{M, CB, ConfType, Stack}() where {M<:Model, CB<:Checkerboard,
     DQMC_bond{M, ConfType, Stack}() where {M<:Model, ConfType<:Any, Stack<:AbstractDQMCStack} = new()
 end
 
-include("stack.jl")
-include("slice_matrices.jl")
+include("stack_bond.jl")
+include("slice_matrices_bond.jl")
 
 """
     DQMC(m::M; kwargs...) where M<:Model
@@ -68,7 +68,7 @@ keyword parameters `kwargs`.
 """
 function DQMC_bond(m::M; seed::Int=-1, kwargs...) where M<:Model
 
-    p = DQMCParameters(; kwargs...)
+    p = DQMC_bondParameters(; kwargs...)
     geltype = greenseltype(DQMC, m)
     conf = rand(DQMC_bond, m, p.slices)
     mc = DQMC_bond{M, typeof(conf), DQMCStack{geltype,Float64}}()
@@ -88,8 +88,8 @@ end
 Create a determinant quantum Monte Carlo simulation for model `m` with
 (keyword) parameters as specified in the dictionary/named tuple `params`.
 """
-DQMC(m::Model, params::Dict{Symbol, T}) where T = DQMC(m; params...)
-DQMC(m::Model, params::NamedTuple) = DQMC(m; params...)
+DQMC_bond(m::Model, params::Dict{Symbol, T}) where T = DQMC_bond(m; params...)
+DQMC_bond(m::Model, params::NamedTuple) = DQMC_bond(m; params...)
 
 
 # convenience
