@@ -93,6 +93,7 @@ function build_b_neighbortable(::Type{SquareLattice}, lattice, bond_lattice, L)
 end
 
 @inline nsites(s::SquareLattice) = s.sites
+@inline n_bonds(s::SquareLattice) = s.n_bonds
 @inline neighbors_lookup_table(s::SquareLattice) = s.neighs
 @inline bond_lookup_table(s::SquareLattice) = s.bond_info
 @inline bond_checkerboard_table(s::SquareLattice) = s.bond_checkerboard

@@ -46,7 +46,7 @@ mutable struct DQMC_bond{M<:Model, ConfType<:Any,
             Stack<:AbstractDQMC_bondStack} <: MonteCarloFlavor
     model::M
     conf::ConfType
-    hopping_mat::ConfType
+    hopping_mat::Array{Float64,5}
     s::Stack
 
     p::DQMC_bondParameters
@@ -244,7 +244,7 @@ function sweep_spatial(mc::DQMC, cb::Int)
     end
     nothing
 end
-
+#=
 """
     greens(mc::DQMC)
 
@@ -279,6 +279,6 @@ function greens(mc::DQMC_CBTrue)
     end
     return greens
 end
-
+=#
 include("DQMC_bond_mandatory.jl")
 include("DQMC_bond_optional.jl")
