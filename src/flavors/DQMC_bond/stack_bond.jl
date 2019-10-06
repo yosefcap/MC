@@ -30,19 +30,7 @@ mutable struct DQMC_bondStack{GreensEltype<:Number, HoppingEltype<:Number} <: Ab
   current_slice::Int # running internally over 0:mc.p.slices+1, where 0 and mc.p.slices+1 are artifcial to prepare next sweep direction.
   direction::Int
 
-  # # -------- Global update backup
-  # gb_u_stack::Array{GreensEltype, 3}
-  # gb_d_stack::Matrix{Float64}
-  # gb_t_stack::Array{GreensEltype, 3}
 
-  # gb_greens::Matrix{GreensEltype}
-  # gb_log_det::Float64
-
-  # gb_conf::Array{Float64, 3}
-  # # --------
-
-
-  # preallocated, reused arrays
   curr_U::Matrix{GreensEltype}
   eV::Matrix{GreensEltype}
 
@@ -114,13 +102,7 @@ function initialize_stack(mc::DQMC_bond)
   mc.s.udt_tmp = zeros(GreensEltype, flv*N, flv*N)
 
 
-  # # Global update backup
-  # mc.s.gb_u_stack = zero(mc.s.u_stack)
-  # mc.s.gb_d_stack = zero(mc.s.d_stack)
-  # mc.s.gb_t_stack = zero(mc.s.t_stack)
-  # mc.s.gb_greens = zero(mc.s.greens)
-  # mc.s.gb_log_det = 0.
-  # mc.s.gb_conf = zero(mc.conf)
+
 
   mc.s.ranges = UnitRange[]
 
