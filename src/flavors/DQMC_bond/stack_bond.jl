@@ -176,9 +176,7 @@ function add_slice_sequence_left(mc::DQMC_bond, idx::Int)
 
   # println("Adding slice seq left $idx = ", mc.s.ranges[idx])
   for slice in mc.s.ranges[idx]
-      for cb in 1:4
-          multiply_slice_matrix_left!(mc, cb, slice, mc.s.curr_U)
-      end
+          multiply_slice_matrix_left!(mc, slice, mc.s.curr_U)
  end
 
   mc.s.curr_U *= spdiagm(0 => mc.s.d_stack[:, idx])
@@ -192,9 +190,7 @@ function add_slice_sequence_right(mc::DQMC_bond, idx::Int)
   copyto!(mc.s.curr_U, mc.s.u_stack[:, :, idx + 1])
 
   for slice in reverse(mc.s.ranges[idx])
-      for cb in 4:-1:1
-          multiply_daggered_slice_matrix_left!(mc, cb, slice, mc.s.curr_U)
-       end
+          multiply_daggered_slice_matrix_left!(mc, slice, mc.s.curr_U)
   end
 
   mc.s.curr_U *=  spdiagm(0 => mc.s.d_stack[:, idx + 1])
@@ -233,13 +229,13 @@ function calculate_logdet(mc::DQMC_bond)
 end
 
 # Green's function propagation
-@inline function wrap_greens!(mc::DQMC_bond, gf::Matrix, cb::Int, curr_slice::Int, direction::Int)
+@inline function wrap_greens!(mc::DQMC_bond, gf::Matrix, curr_slice::Int, direction::Int)
   if direction == -1
-    multiply_slice_matrix_inv_left!(mc,  cb, curr_slice - 1, gf)
-    multiply_slice_matrix_right!(mc,  cb, curr_slice - 1, gf)
+    multiply_slice_matrix_inv_left!(mc,   curr_slice - 1, gf)
+    multiply_slice_matrix_right!(mc,  curr_slice - 1, gf)
   else
-    multiply_slice_matrix_left!(mc, cb, curr_slice, gf)
-    multiply_slice_matrix_inv_right!(mc, cb, curr_slice, gf)
+    multiply_slice_matrix_left!(mc,  curr_slice, gf)
+    multiply_slice_matrix_inv_right!(mc, curr_slice, gf)
   end
   nothing
 end
@@ -268,7 +264,7 @@ function propagate(mc::DQMC_bond, cb::Int)
           mc.s.greens_temp = copy(mc.s.greens)
         end
 
-        wrap_greens!(mc, mc.s.greens_temp, cb, mc.s.current_slice - 1, 1)
+        wrap_greens!(mc, mc.s.greens_temp, mc.s.current_slice - 1, 1)
 
         calculate_greens(mc) # greens_{slice we are propagating to}
 
@@ -289,7 +285,7 @@ function propagate(mc::DQMC_bond, cb::Int)
 
     else
       # Wrapping
-      wrap_greens!(mc, mc.s.greens, cb, mc.s.current_slice, 1)
+      wrap_greens!(mc, mc.s.greens, mc.s.current_slice, 1)
       mc.s.current_slice += 1
     end
 
@@ -328,7 +324,7 @@ function propagate(mc::DQMC_bond, cb::Int)
           end
         end
 
-        wrap_greens!(mc, mc.s.greens, cb, mc.s.current_slice + 1, -1)
+        wrap_greens!(mc, mc.s.greens, mc.s.current_slice + 1, -1)
 
       else # we are going to 0
         idx = 1
@@ -340,7 +336,7 @@ function propagate(mc::DQMC_bond, cb::Int)
 
     else
       # Wrapping
-      wrap_greens!(mc, mc.s.greens, cb, mc.s.current_slice, -1)
+      wrap_greens!(mc, mc.s.greens,  mc.s.current_slice, -1)
       mc.s.current_slice -= 1
     end
   end
