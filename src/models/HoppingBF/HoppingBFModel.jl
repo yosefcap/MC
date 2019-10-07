@@ -83,29 +83,29 @@ This is a performance critical method.
 end
 
 
-@inline function propose_local(mc::DQMC, m::HoppingBFModel, n::Int, slice::Int, conf::HBFConf,energy_boson::Float64)
+@inline function propose_local(mc::DQMC, m::HoppingBFModel, n::Int, time_slice::Int, conf::HBFConf,energy_boson::Float64)
     # see for example dos Santos (2002)
     greens = mc.s.greens
     dtau = mc.p.delta_tau
     Kxy = mc.p.K_xy
     Ktau = mc.p.K_tau
     α = mc.p.α
-    num_slices = mc.p.slices
+    num_slices = mc.p.time_slices
     bond_info = m.bond_info
     forwards = mod(slice,num_slices)+1
     backwards = mod(slice-2,num_slices)+1
 
     c_α = cosh(2*α)-1
     s_α = sinh(2*α)
-    if conf[n,slice]==1 #+ to -
+    if conf[n,time_slice]==1 #+ to -
         Δ  = [c_α  -s_α ; -s_α  c_α] #flipping + spin to - spin
-        ΔE_boson = -2*(Kxy*(conf[bond_info[4,n],slice]+conf[bond_info[5,n],slice]+
-        conf[bond_info[6,n],slice]+conf[bond_info[7,n],slice])
+        ΔE_boson = -2*(Kxy*(conf[bond_info[4,n],time_slice]+conf[bond_info[5,n],time_slice]+
+        conf[bond_info[6,n],time_slice]+conf[bond_info[7,n],time_slice])
         +Ktau*(conf[n,forwards]+conf[n,backwards]))
     else
         Δ = [c_α   s_α ;  s_α  c_α]#flipping - spin to + spin
-        ΔE_boson = 2*(Kxy*(conf[bond_info[4,n],slice]+conf[bond_info[5,n],slice]+
-        conf[bond_info[6,n],slice]+conf[bond_info[7,n],slice])
+        ΔE_boson = 2*(Kxy*(conf[bond_info[4,n],time_slice]+conf[bond_info[5,n],time_slice]+
+        conf[bond_info[6,n],time_slice]+conf[bond_info[7,n],time_slice])
         +Ktau*(conf[n,forwards]+conf[n,backwards]))
     end
     i = m.bond_info[2,n]

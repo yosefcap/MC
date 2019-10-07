@@ -20,9 +20,9 @@ Parameters of determinant quantum Monte Carlo (DQMC)
     global_rate::Int = 5
     thermalization::Int = 100 # number of thermalization sweeps
     sweeps::Int = 100 # number of sweeps (after thermalization)
-
+    num_ch::Int = 4
     all_checks::Bool = true # e.g. check if propagation is stable/instable
-    safe_mult::Int = 10
+    safe_mult::Int = num_ch*3
 
     delta_tau::Float64 = 0.1
     beta::Float64
@@ -30,7 +30,9 @@ Parameters of determinant quantum Monte Carlo (DQMC)
     h::Float64
     K_xy::Float64 = J*delta_tau
     K_tau::Float64 = 0.5*log(coth(h*delta_tau))
-    slices::Int = beta / delta_tau
+
+    time_slices::Int = beta / delta_tau
+    slices::Int  = num_ch*time_slices
     @assert isinteger(beta / delta_tau) string("beta/delta_tau", "
         (= number of imaginary time slices) must be an integer but is",
         beta / delta_tau, ".")
@@ -204,10 +206,8 @@ Propagates the Green's function and performs local and global updates at
 current imaginary time slice.
 """
 function update(mc::DQMC_bond, i::Int)
-    for cb=1:4
-        propagate(mc,cb)
-        sweep_spatial(mc,cb)
-    end
+    propagate(mc)
+    sweep_spatial(mc)
 
     nothing
 end
@@ -218,14 +218,18 @@ end
 Performs a sweep of local moves along spatial dimension at current
 imaginary time slice.
 """
-function sweep_spatial(mc::DQMC, cb::Int)
+function sweep_spatial(mc::DQMC)
 
     m = model(mc)
     N = div(nsites(m),2) # number of bonds in a checkerboard
     bond_checkerboard = m.bond_checkerboard
+    cs = current_slice(mc)
+    num_ch=mc.p.num_ch
+    time_slice = cld(cs,num_ch)
+    cb = mod1(cs,num_ch)
     @inbounds for b in 1:N
         i = bond_checkerboard[1,b,cb] # index of bond i in checkerboard ch
-        detratio, ΔE_boson, Δ = propose_local(mc, m, i, current_slice(mc), conf(mc))# y.c. added index j
+        detratio, ΔE_boson, Δ = propose_local(mc, m, i, time_slice, conf(mc))# y.c. added index j
         mc.a.prop_local += 1
         if abs(imag(detratio)) > 1e-6
             println("Did you expect a sign problem? imag. detratio: ",
@@ -236,7 +240,7 @@ function sweep_spatial(mc::DQMC, cb::Int)
 
         # Metropolis
         if p > 1 || rand() < p
-            accept_local!(mc, m, i, cb, current_slice(mc), conf(mc), Δ, detratio,
+            accept_local!(mc, m, i, cb, time_slice, conf(mc), Δ, detratio,
                 ΔE_boson)
             mc.a.acc_rate += 1/N
             mc.a.acc_local += 1

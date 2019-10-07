@@ -33,7 +33,7 @@ mutable struct DQMC_bondStack{GreensEltype<:Number, HoppingEltype<:Number} <: Ab
 
   curr_U::Matrix{GreensEltype}
   eV::Matrix{GreensEltype}
-
+#=
   # hopping matrices
   hopping_matrix_exp::Matrix{HoppingEltype} # mu included
   hopping_matrix_exp_inv::Matrix{HoppingEltype} # mu included
@@ -52,7 +52,7 @@ mutable struct DQMC_bondStack{GreensEltype<:Number, HoppingEltype<:Number} <: Ab
   chkr_mu_half_inv::SparseMatrixCSC{HoppingEltype, Int64}
   chkr_mu::SparseMatrixCSC{HoppingEltype, Int64}
   chkr_mu_inv::SparseMatrixCSC{HoppingEltype, Int64}
-
+=#
 
   DQMC_bondStack{GreensEltype, HoppingEltype}() where {GreensEltype<:Number, HoppingEltype<:Number} = begin
     # @assert isleaftype(GreensEltype);
@@ -127,16 +127,16 @@ function init_hopping_matrices(mc::DQMC_bond, m::Model)
     conf = mc.conf
     b_ch = m.bond_checkerboard
     dtau = mc.p.delta_tau
-    slices = mc.p.slices
-    num_ch=4
+    time_slices = mc.p.time_slices
+    num_ch = mc.p.num_ch
     num_bond = size(b_ch,2)
-    hopping_mat = zeros(2,2,num_bond,slices,num_ch)
+    hopping_mat = zeros(2,2,num_bond,time_slices,num_ch)
     t = m.t
     α = m.α
 
     for i in 1:num_ch
         for j in 1:num_bond
-            for k in 1:slices
+            for k in 1:time_slices
                 c = cosh(dtau*t*(1+α*conf[b_ch[1,j,i],k]))
                 s = sinh(dtau*t*(1+α*conf[b_ch[1,j,i],k]))
                 hopping_mat[:,:,j,k,i] = [c s ; s c]
@@ -239,7 +239,7 @@ end
   end
   nothing
 end
-function propagate(mc::DQMC_bond, cb::Int)
+function propagate(mc::DQMC_bond)
   if mc.s.direction == 1
     if mod(mc.s.current_slice, mc.p.safe_mult) == 0
       mc.s.current_slice +=1 # slice we are going to
@@ -280,7 +280,7 @@ function propagate(mc::DQMC_bond, cb::Int)
         add_slice_sequence_left(mc, idx)
         mc.s.direction = -1
         mc.s.current_slice = mc.p.slices+1 # redundant
-        propagate(mc,cb)
+        propagate(mc)
       end
 
     else
@@ -331,7 +331,7 @@ function propagate(mc::DQMC_bond, cb::Int)
         add_slice_sequence_right(mc, idx)
         mc.s.direction = 1
         mc.s.current_slice = 0 # redundant
-        propagate(mc,cb)
+        propagate(mc)
       end
 
     else
