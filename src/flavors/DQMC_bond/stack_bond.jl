@@ -160,8 +160,8 @@ function build_stack(mc::DQMC_bond)
   mc.s.t_stack[:, :, 1] = mc.s.eye_full
 
   @inbounds for i in 1:length(mc.s.ranges)
-    add_slice_sequence_left(mc, i)
-  end
+        add_slice_sequence_left(mc,i)
+    end
 
   mc.s.current_slice = mc.p.slices + 1
   mc.s.direction = -1
@@ -176,8 +176,10 @@ function add_slice_sequence_left(mc::DQMC_bond, idx::Int)
 
   # println("Adding slice seq left $idx = ", mc.s.ranges[idx])
   for slice in mc.s.ranges[idx]
-    multiply_slice_matrix_left!(mc, mc.model, slice, mc.s.curr_U)
-  end
+      for cb in 1:4
+          multiply_slice_matrix_left!(mc, cb, slice, mc.s.curr_U)
+      end
+ end
 
   mc.s.curr_U *= spdiagm(0 => mc.s.d_stack[:, idx])
   mc.s.u_stack[:, :, idx + 1], mc.s.d_stack[:, idx + 1], T = udt(mc.s.curr_U)
@@ -190,7 +192,9 @@ function add_slice_sequence_right(mc::DQMC_bond, idx::Int)
   copyto!(mc.s.curr_U, mc.s.u_stack[:, :, idx + 1])
 
   for slice in reverse(mc.s.ranges[idx])
-    multiply_daggered_slice_matrix_left!(mc, mc.model, slice, mc.s.curr_U)
+      for cb in 4:-1:1
+          multiply_daggered_slice_matrix_left!(mc, cb, slice, mc.s.curr_U)
+       end
   end
 
   mc.s.curr_U *=  spdiagm(0 => mc.s.d_stack[:, idx + 1])
@@ -231,11 +235,11 @@ end
 # Green's function propagation
 @inline function wrap_greens!(mc::DQMC_bond, gf::Matrix, cb::Int, curr_slice::Int, direction::Int)
   if direction == -1
-    multiply_slice_matrix_inv_left!(mc, mc.model, cb, curr_slice - 1, gf)
-    multiply_slice_matrix_right!(mc, mc.model, cb, curr_slice - 1, gf)
+    multiply_slice_matrix_inv_left!(mc,  cb, curr_slice - 1, gf)
+    multiply_slice_matrix_right!(mc,  cb, curr_slice - 1, gf)
   else
-    multiply_slice_matrix_left!(mc, mc.model, cb, curr_slice, gf)
-    multiply_slice_matrix_inv_right!(mc, mc.model, cb, curr_slice, gf)
+    multiply_slice_matrix_left!(mc, cb, curr_slice, gf)
+    multiply_slice_matrix_inv_right!(mc, cb, curr_slice, gf)
   end
   nothing
 end
