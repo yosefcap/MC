@@ -1,5 +1,3 @@
-# CheckerboardFalse
-const DQMC_CBFalse = DQMC{M, CheckerboardFalse} where M
 
 """
 	slice_matrix(mc::DQMC_CBFalse, m::Model, slice::Int, power::Float64=1.)

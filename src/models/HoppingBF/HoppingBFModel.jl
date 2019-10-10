@@ -83,7 +83,7 @@ This is a performance critical method.
 end
 
 
-@inline function propose_local(mc::DQMC, m::HoppingBFModel, n::Int, time_slice::Int, conf::HBFConf,energy_boson::Float64)
+@inline function propose_local(mc::DQMC_bond, m::HoppingBFModel, n::Int, time_slice::Int, conf::HBFConf)
     # see for example dos Santos (2002)
     greens = mc.s.greens
     dtau = mc.p.delta_tau
@@ -92,8 +92,8 @@ end
     α = mc.p.α
     num_slices = mc.p.time_slices
     bond_info = m.bond_info
-    forwards = mod(slice,num_slices)+1
-    backwards = mod(slice-2,num_slices)+1
+    forwards = mod(time_slice,num_slices)+1
+    backwards = mod(time_slice-2,num_slices)+1
 
     c_α = cosh(2*α)-1
     s_α = sinh(2*α)

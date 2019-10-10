@@ -19,10 +19,10 @@ Parameters of determinant quantum Monte Carlo (DQMC)
     global_moves::Bool = false
     global_rate::Int = 5
     thermalization::Int = 100 # number of thermalization sweeps
-    sweeps::Int = 100 # number of sweeps (after thermalization)
     num_ch::Int = 4
+    sweeps::Int = num_ch*25 # number of sweeps (after thermalization)
     all_checks::Bool = true # e.g. check if propagation is stable/instable
-    safe_mult::Int = num_ch*3
+    safe_mult::Int = num_ch*2
 
     delta_tau::Float64 = 0.1
     beta::Float64
@@ -30,6 +30,7 @@ Parameters of determinant quantum Monte Carlo (DQMC)
     h::Float64
     K_xy::Float64 = J*delta_tau
     K_tau::Float64 = 0.5*log(coth(h*delta_tau))
+    α::Float64 = 0
 
     time_slices::Int = beta / delta_tau
     slices::Int  = num_ch*time_slices
@@ -148,9 +149,9 @@ function run!(mc::DQMC_bond; verbose::Bool=true, sweeps::Int=mc.p.sweeps,
     verbose && println("Preparing Green's function stack")
     initialize_stack(mc) # redundant ?!
     build_stack(mc)
-    for cb in 1:4
-        propagate(mc,cb)
-    end
+
+    propagate(mc)
+
 
     _time = time()
     verbose && println("\n\nThermalization stage - ", thermalization)
@@ -218,15 +219,15 @@ end
 Performs a sweep of local moves along spatial dimension at current
 imaginary time slice.
 """
-function sweep_spatial(mc::DQMC)
+function sweep_spatial(mc::DQMC_bond)
 
     m = model(mc)
     N = div(nsites(m),2) # number of bonds in a checkerboard
     bond_checkerboard = m.bond_checkerboard
     cs = current_slice(mc)
     num_ch=mc.p.num_ch
-    time_slice = cld(cs,num_ch)
-    cb = mod1(cs,num_ch)
+    time_slice = cld(cs,num_ch) # imagenary time
+    cb = mod1(cs,num_ch) # number of checkerboard in time slice
     @inbounds for b in 1:N
         i = bond_checkerboard[1,b,cb] # index of bond i in checkerboard ch
         detratio, ΔE_boson, Δ = propose_local(mc, m, i, time_slice, conf(mc))# y.c. added index j

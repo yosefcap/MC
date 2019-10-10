@@ -3,7 +3,7 @@ using Test
 
 #@testset DQMC.jl begin
 m = HoppingBFModel(dims=2,L=8)
-mc=DQMC_bond(m,beta=1,J=1, h=0.2)
+mc=DQMC_bond(m,beta=1,J=1, h=0.2, α=0.1)
 
 run!(mc, sweeps=10, thermalization=10, verbose=true);
 
