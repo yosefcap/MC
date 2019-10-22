@@ -24,7 +24,7 @@ See also [`prepare_observables`](@ref) and [`finish_observables!`](@ref).
 @noinline function measure_observables!(mc::DQMC_bond, m::HoppingBFModel,
 							obs::Dict{String,Observable}, conf::HBFConf)
     push!(obs["confs"], mc.conf)
-    push!(obs["greens"], greens(mc))
+    push!(obs["greens"], mc.s.greens)
     push!(obs["Eboson"], energy_boson(mc, m, conf))
     nothing
 end

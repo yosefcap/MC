@@ -8,7 +8,7 @@ Create an Hopping Boson Fermion model on `dims`-dimensional cubic lattice
 with linear system size `L`. Additional allowed `kwargs` are:
 
  * `mu::Float64=0.0`: chemical potential
- * `α::Float64 = 1.0`: Boson-Fermion coupling
+ * `α::Float64 = 0.0`: Boson-Fermion coupling
  * `t::Float64=1.0`: hopping energy
 """
 
