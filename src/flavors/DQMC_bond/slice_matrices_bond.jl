@@ -1,45 +1,9 @@
 
-"""
-	slice_matrix(mc::DQMC_CBFalse, m::Model, slice::Int, power::Float64=1.)
-
-Direct calculation of effective slice matrix, i.e. no checkerboard.
-Calculates `Beff(slice) = exp(−1/2∆tauT)exp(−1/2∆tauT)exp(−∆tauV(slice))`.
-"""
-function slice_matrix(mc::DQMC_CBFalse, m::Model, slice::Int,
-					power::Float64=1.)
-	eT = mc.s.hopping_matrix_exp
-	eTinv = mc.s.hopping_matrix_exp_inv
-	eV = mc.s.eV
-
-	interaction_matrix_exp!(mc, m, eV, mc.conf, slice, power)
-
-	if power > 0
-		return eT * eT * eV
-	else
-		return eV * eTinv * eTinv
-	end
-end
-
-
-# CheckerboardTrue
-#=
-const DQMC_CBTrue = DQMC{M, CheckerboardTrue} where M
-
-function slice_matrix(mc::DQMC_CBTrue, m::Model, slice::Int, power::Float64=1.)
-  M = eye(heltype(mc), m.flv*m.l.sites)
-  if power > 0
-    multiply_slice_matrix_left!(mc, m, slice, M)
-  else
-    multiply_slice_matrix_inv_left!(mc, m, slice, M)
-  end
-  return M
-end
-=#
 function multiply_slice_matrix_left!(mc::DQMC_bond,  slice::Int, M::AbstractMatrix{T}) where T<:Number
     bond_ch = mc.model.bond_checkerboard
     hopping_mat = mc.hopping_mat#[:,:,n,slice,cb]
     N=size(hopping_mat,3) #number of bonds in checkerboard
-	cb = mod1(slice,4) # !!4 is the number of checkerboards - replace later in a variable!!
+	cb = mod1(slice,4) # !!4 is the number of checkerboards - replace later with a variable!!
     @inbounds @views begin
 	    for n in 1:N
 	        i = bond_ch[2,n,cb]
@@ -144,8 +108,43 @@ function multiply_daggered_slice_matrix_right!(mc::DQMC_bond,  slice::Int, M::Ab
     nothing
 end
 
+#=
+"""
+	slice_matrix(mc::DQMC_CBFalse, m::Model, slice::Int, power::Float64=1.)
 
+Direct calculation of effective slice matrix, i.e. no checkerboard.
+Calculates `Beff(slice) = exp(−1/2∆tauT)exp(−1/2∆tauT)exp(−∆tauV(slice))`.
+"""
+function slice_matrix(mc::DQMC_CBFalse, m::Model, slice::Int,
+					power::Float64=1.)
+	eT = mc.s.hopping_matrix_exp
+	eTinv = mc.s.hopping_matrix_exp_inv
+	eV = mc.s.eV
 
+	interaction_matrix_exp!(mc, m, eV, mc.conf, slice, power)
+
+	if power > 0
+		return eT * eT * eV
+	else
+		return eV * eTinv * eTinv
+	end
+end
+=#
+
+# CheckerboardTrue
+#=
+const DQMC_CBTrue = DQMC{M, CheckerboardTrue} where M
+
+function slice_matrix(mc::DQMC_CBTrue, m::Model, slice::Int, power::Float64=1.)
+  M = eye(heltype(mc), m.flv*m.l.sites)
+  if power > 0
+    multiply_slice_matrix_left!(mc, m, slice, M)
+  else
+    multiply_slice_matrix_inv_left!(mc, m, slice, M)
+  end
+  return M
+end
+=#
 #=
 function multiply_slice_matrix_inv_left!(mc::DQMC_bond, cb::Int, slice::Int, M::AbstractMatrix{T}) where T<:Number
     bond_ch = mc.model.bond_checkerboard

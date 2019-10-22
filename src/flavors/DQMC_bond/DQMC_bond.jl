@@ -26,11 +26,6 @@ Parameters of determinant quantum Monte Carlo (DQMC)
 
     delta_tau::Float64 = 0.1
     beta::Float64
-    J::Float64
-    h::Float64
-    K_xy::Float64 = J*delta_tau
-    K_tau::Float64 = 0.5*log(coth(h*delta_tau))
-    α::Float64 = 0
 
     time_slices::Int = beta / delta_tau
     slices::Int  = num_ch*time_slices
@@ -50,13 +45,15 @@ mutable struct DQMC_bond{M<:Model, ConfType<:Any,
     model::M
     conf::ConfType
     hopping_mat::Array{Float64,5}
+    diag_terms_mat::Array{Float64,1} #diagonal matrix including chemical potential and onsite disorder
     s::Stack
 
     p::DQMC_bondParameters
     a::DQMC_bondAnalysis
     obs::Dict{String, Observable}
 
-    #DQMC_bond{M, CB, ConfType, Stack}() where {M<:Model, CB<:Checkerboard,
+    K_xy::Float64
+    K_tau::Float64
     DQMC_bond{M, ConfType, Stack}() where {M<:Model, ConfType<:Any, Stack<:AbstractDQMC_bondStack} = new()
 end
 
@@ -64,7 +61,7 @@ include("stack_bond.jl")
 include("slice_matrices_bond.jl")
 
 """
-    DQMC(m::M; kwargs...) where M<:Model
+    DQMC_bond(m::M; kwargs...) where M<:Model
 
 Create a determinant quantum Monte Carlo simulation for model `m` with
 keyword parameters `kwargs`.
@@ -78,7 +75,8 @@ function DQMC_bond(m::M; seed::Int=-1, kwargs...) where M<:Model
     mc.model = m
     mc.p = p
     mc.s = DQMC_bondStack{geltype,Float64}()
-
+    mc.K_xy = m.J*p.delta_tau
+    mc.K_tau = 0.5*log(coth(m.h*p.delta_tau))
     init!(mc, seed=seed, conf=conf)
     return mc
 end
@@ -126,6 +124,7 @@ function init!(mc::DQMC_bond; seed::Real=-1, conf=rand(DQMC_bond,model(mc),nslic
 
     mc.conf = conf
     mc.hopping_mat = init_hopping_matrices(mc, mc.model)
+    mc.diag_terms_mat = init_diag_terms_mat(mc, mc.model)
     initialize_stack(mc)
     mc.obs = prepare_observables(mc, mc.model)
     mc.a = DQMC_bondAnalysis()

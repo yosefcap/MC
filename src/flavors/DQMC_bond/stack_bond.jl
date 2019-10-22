@@ -1,4 +1,4 @@
-# type
+#type
 mutable struct DQMC_bondStack{GreensEltype<:Number, HoppingEltype<:Number} <: AbstractDQMC_bondStack
   eye_flv::Matrix{Float64}
   eye_full::Matrix{Float64}
@@ -33,30 +33,9 @@ mutable struct DQMC_bondStack{GreensEltype<:Number, HoppingEltype<:Number} <: Ab
 
   curr_U::Matrix{GreensEltype}
   eV::Matrix{GreensEltype}
-#=
-  # hopping matrices
-  hopping_matrix_exp::Matrix{HoppingEltype} # mu included
-  hopping_matrix_exp_inv::Matrix{HoppingEltype} # mu included
 
-  # checkerboard hopping matrices
-  checkerboard::Matrix{Int} # src, trg, bondid
-  groups::Vector{UnitRange}
-  n_groups::Int
-  chkr_hop_half::Vector{SparseMatrixCSC{HoppingEltype, Int64}}
-  chkr_hop_half_inv::Vector{SparseMatrixCSC{HoppingEltype, Int64}}
-  chkr_hop_half_dagger::Vector{SparseMatrixCSC{HoppingEltype, Int64}}
-  chkr_hop::Vector{SparseMatrixCSC{HoppingEltype, Int64}} # without prefactor 0.5 in matrix exponentials
-  chkr_hop_inv::Vector{SparseMatrixCSC{HoppingEltype, Int64}}
-  chkr_hop_dagger::Vector{SparseMatrixCSC{HoppingEltype, Int64}}
-  chkr_mu_half::SparseMatrixCSC{HoppingEltype, Int64}
-  chkr_mu_half_inv::SparseMatrixCSC{HoppingEltype, Int64}
-  chkr_mu::SparseMatrixCSC{HoppingEltype, Int64}
-  chkr_mu_inv::SparseMatrixCSC{HoppingEltype, Int64}
-=#
 
   DQMC_bondStack{GreensEltype, HoppingEltype}() where {GreensEltype<:Number, HoppingEltype<:Number} = begin
-    # @assert isleaftype(GreensEltype);
-    # @assert isleaftype(HoppingEltype);
     @assert isconcretetype(GreensEltype);
     @assert isconcretetype(HoppingEltype);
     new()
@@ -143,8 +122,19 @@ function init_hopping_matrices(mc::DQMC_bond, m::Model)
             end
         end
     end
+    return hopping_mat
+end
 
-  return hopping_mat
+function init_diag_terms_mat(mc::DQMC_bond, m::Model)
+    dtau = mc.p.delta_tau
+    μ    = m.μ
+    η    = m.η
+    L    = m.L
+    dims = m.dims
+    diag_terms_mat = zeros(L^dims)
+    for i in 1:L^dims
+        diag_terms_mat[i] = exp[-dtau*(μ+η*randn())]
+    end
 end
 
 # checkerboard

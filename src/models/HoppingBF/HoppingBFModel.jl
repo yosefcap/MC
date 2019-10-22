@@ -16,11 +16,14 @@ with linear system size `L`. Additional allowed `kwargs` are:
     # user mandatory
     dims::Int
     L::Int
+    J::Float64 #ising coupling
+    h::Float64 #transvers field
 
     # user optional
-    mu::Float64 = 0.0
-    α::Float64 = 1.0
     t::Float64 = 1.0
+    α::Float64 = 0.0
+    μ::Float64 = 0.0
+    η::Float64 = 0.0 #disorder
 
     # non-user fields
     l::C = choose_lattice(HoppingBFModel, dims, L)
@@ -68,27 +71,14 @@ Base.show(io::IO, m::MIME"text/plain", model::HoppingBFModel) = print(io, model)
 # implement `DQMC` interface: mandatory
 @inline Base.rand(::Type{DQMC_bond}, m::HoppingBFModel, nslices::Int) = rand(HBFDistribution, n_bonds(m), nslices)
 
-"""
-Calculate the interaction matrix exponential `expV = exp(- power * delta_tau * V(slice))`
-and store it in `result::Matrix`.
-
-This is a performance critical method.
-"""
-@inline function interaction_matrix_exp!(mc::DQMC_bond, m::HoppingBFModel,
-            result::Matrix, conf::HBFConf, slice::Int, power::Float64=1.)
-    dtau = mc.p.delta_tau
-    lambda = acosh(exp(m.U * dtau/2))
-    result .= spdiagm(0 => exp.(sign(power) * lambda * conf[:,slice]))
-    nothing
-end
 
 
 @inline function propose_local(mc::DQMC_bond, m::HoppingBFModel, n::Int, time_slice::Int, conf::HBFConf)
     # see for example dos Santos (2002)
     greens = mc.s.greens
     dtau = mc.p.delta_tau
-    Kxy = mc.p.K_xy
-    Ktau = mc.p.K_tau
+    Kxy = mc.K_xy
+    Ktau = mc.K_tau
     α = mc.p.α
     num_slices = mc.p.time_slices
     bond_info = m.bond_info
