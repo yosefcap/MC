@@ -45,7 +45,8 @@ mutable struct DQMC_bond{M<:Model, ConfType<:Any,
     model::M
     conf::ConfType
     hopping_mat::Array{Float64,5}
-    diag_terms_mat::Array{Float64,1} #diagonal matrix including chemical potential and onsite disorder
+    diag_terms::Array{Float64,1} #diagonal terms including chemical potential and onsite disorder
+    diag_terms_inv::Array{Float64,1} #inverse diagonal terms including chemical potential and onsite disorder
     s::Stack
 
     p::DQMC_bondParameters
@@ -124,7 +125,7 @@ function init!(mc::DQMC_bond; seed::Real=-1, conf=rand(DQMC_bond,model(mc),nslic
 
     mc.conf = conf
     mc.hopping_mat = init_hopping_matrices(mc, mc.model)
-    mc.diag_terms_mat = init_diag_terms_mat(mc, mc.model)
+    init_diag_terms(mc, mc.model)
     initialize_stack(mc)
     mc.obs = prepare_observables(mc, mc.model)
     mc.a = DQMC_bondAnalysis()

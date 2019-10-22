@@ -125,15 +125,18 @@ function init_hopping_matrices(mc::DQMC_bond, m::Model)
     return hopping_mat
 end
 
-function init_diag_terms_mat(mc::DQMC_bond, m::Model)
+function init_diag_terms(mc::DQMC_bond, m::Model)
     dtau = mc.p.delta_tau
     μ    = m.μ
     η    = m.η
     L    = m.L
     dims = m.dims
-    diag_terms_mat = zeros(L^dims)
+    mc.diag_terms = zeros(L^dims)
+    mc.diag_terms_inv = zeros(L^dims)
     for i in 1:L^dims
-        diag_terms_mat[i] = exp[-dtau*(μ+η*randn())]
+        disorder = randn()
+        mc.diag_terms[i] = exp(-dtau*(μ+η*disorder))
+        mc.diag_terms_inv[i] = exp(dtau*(μ+η*disorder))
     end
 end
 

@@ -4,6 +4,11 @@ function multiply_slice_matrix_left!(mc::DQMC_bond,  slice::Int, M::AbstractMatr
     hopping_mat = mc.hopping_mat#[:,:,n,slice,cb]
     N=size(hopping_mat,3) #number of bonds in checkerboard
 	cb = mod1(slice,4) # !!4 is the number of checkerboards - replace later with a variable!!
+	if cb==4
+		diag_terms = mc.diag_terms
+		M = M.*diag_terms
+	end
+
     @inbounds @views begin
 	    for n in 1:N
 	        i = bond_ch[2,n,cb]
@@ -13,6 +18,11 @@ function multiply_slice_matrix_left!(mc::DQMC_bond,  slice::Int, M::AbstractMatr
 	        M[j,:] = B[2,:]
 	    end
 	end
+
+
+
+
+
     nothing
 end
 function multiply_slice_matrix_right!(mc::DQMC_bond,  slice::Int, M::AbstractMatrix{T}) where T<:Number
@@ -28,6 +38,10 @@ function multiply_slice_matrix_right!(mc::DQMC_bond,  slice::Int, M::AbstractMat
 	        M[:,i] = B[:,1]
 	        M[:,j] = B[:,2]
 	    end
+	end
+	if cb==4
+		diag_terms = mc.diag_terms
+		M = M.*diag_terms'
 	end
     nothing
 end
@@ -52,6 +66,10 @@ function multiply_slice_matrix_inv_left!(mc::DQMC_bond,  slice::Int, M::Abstract
 	        M[j,:] = B[2,:]
 	    end
 	end
+	if cb==4
+		diag_terms_inv = mc.diag_terms_inv
+		M = M.*diag_terms_inv
+	end
     nothing
 end
 function multiply_slice_matrix_inv_right!(mc::DQMC_bond, slice::Int, M::AbstractMatrix{T}) where T<:Number
@@ -59,7 +77,11 @@ function multiply_slice_matrix_inv_right!(mc::DQMC_bond, slice::Int, M::Abstract
     hopping_mat = mc.hopping_mat#[:,:,n,slice,cb]
     N=size(hopping_mat,3) #number of bonds in checkerboard
 	cb = mod1(slice,4) # !!4 is the number of checkerboards - replace later in a variable!!
-    h_inv = zeros(Float64,2,2)
+	if cb==4
+		diag_terms_inv = mc.diag_terms_inv
+		M = M.*diag_terms_inv'
+	end
+	h_inv = zeros(Float64,2,2)
     @inbounds @views begin
 	    for n in 1:N
 	        i = bond_ch[2,n,cb]
@@ -80,6 +102,10 @@ function multiply_daggered_slice_matrix_left!(mc::DQMC_bond, slice::Int, M::Abst
     hopping_mat = mc.hopping_mat#[:,:,n,slice,cb]
     N=size(hopping_mat,3) #number of bonds in checkerboard
 	cb = mod1(slice,4) # !!4 is the number of checkerboards - replace later in a variable!!
+	if cb==4
+		diag_terms = mc.diag_terms
+		M = M.*diag_terms
+	end
     @inbounds @views begin
 	    for n in 1:N
 	        i = bond_ch[2,n,cb]
@@ -104,6 +130,10 @@ function multiply_daggered_slice_matrix_right!(mc::DQMC_bond,  slice::Int, M::Ab
 	        M[:,i] = B[:,1]
 	        M[:,j] = B[:,2]
 	    end
+	end
+	if cb==4
+		diag_terms = mc.diag_terms
+		M = M.*diag_terms'
 	end
     nothing
 end
