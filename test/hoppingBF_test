@@ -1,10 +1,16 @@
 using MonteCarlo
-using Test
+using Test, Plots,PyPlot
 
 #@testset DQMC.jl begin
-m = HoppingBFModel(dims=2,L=8,J=1,h=0.2, α=0.1)
+m = HoppingBFModel(dims=2,L=8,J=1, h=0.2, α=0.1)
 mc=DQMC_bond(m,beta=1)
 
-run!(mc, sweeps=10, thermalization=10, verbose=true);
-
+run!(mc, sweeps=40, thermalization=40, verbose=true);
+observables(mc) # what observables do exist for that simulation?
+#m = mc.obs["m"] # magnetization
+#mean(m)
+#std(m) # one-sigma error
+greens = mc.obs["greens"]
+conf = mc.obs["confs"]
+phistogram(conf)
 #end
