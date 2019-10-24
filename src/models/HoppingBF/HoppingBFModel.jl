@@ -73,7 +73,7 @@ Base.show(io::IO, m::MIME"text/plain", model::HoppingBFModel) = print(io, model)
 
 
 
-@inline function propose_local(mc::DQMC_bond, m::HoppingBFModel, n::Int, time_slice::Int, conf::HBFConf)
+@inline function propose_local(mc::DQMC_bond, m::HoppingBFModel, n::Int, slice::Int, conf::HBFConf)
     # see for example dos Santos (2002)
     greens = mc.s.greens
     dtau = mc.p.delta_tau
@@ -82,9 +82,11 @@ Base.show(io::IO, m::MIME"text/plain", model::HoppingBFModel) = print(io, model)
     α = m.α
     num_slices = mc.p.time_slices
     bond_info = m.bond_info
+    num_ch=mc.p.num_ch #number of checkerboards
+    time_slice = cld(slice,num_ch) # imagenary time
+    cb = mod1(slice,num_ch) # number of checkerboard in time slice
     forwards = mod(time_slice,num_slices)+1
     backwards = mod(time_slice-2,num_slices)+1
-
     c_α = cosh(2*α)-1
     s_α = sinh(2*α)
     if conf[n,time_slice]==1 #+ to -
@@ -107,7 +109,7 @@ Base.show(io::IO, m::MIME"text/plain", model::HoppingBFModel) = print(io, model)
 end
 
 @inline function accept_local!(mc::DQMC_bond, m::HoppingBFModel, n::Int, cb::Int,
-            slice::Int, conf::HBFConf, Δ, detratio, ΔE_boson::Float64)
+            time_slice::Int, conf::HBFConf, Δ, detratio, ΔE_boson::Float64)
     greens = mc.s.greens
     t = m.t
     α = m.α
@@ -122,10 +124,10 @@ end
     Λ[j,j] = Λred[2,2]
     greens = greens*(I-Λ*greens)
 
-    conf[n, slice] *= -1
-    c = cosh(dtau*t*(1+α*conf[n, slice]))
-    s = sinh(dtau*t*(1+α*conf[n, slice]))
-    mc.hopping_mat[:,:,n,slice,cb] = [c s ; s c]
+    conf[n, time_slice] *= -1
+    c = cosh(dtau*t*(1+α*conf[n, time_slice]))
+    s = sinh(dtau*t*(1+α*conf[n, time_slice]))
+    mc.hopping_mat[:,:,n,time_slice,cb] = [c s ; s c]
 
     nothing
 end

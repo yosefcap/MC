@@ -1,16 +1,50 @@
 using MonteCarlo
-using Test, Plots,PyPlot
+using Test, Plots
+
 
 #@testset DQMC.jl begin
-m = HoppingBFModel(dims=2,L=8,J=1, h=0.2, α=0.1)
+m = HoppingBFModel(dims=2,L=8,J=1, h=0.2, α=0.1,μ=0.2)
 mc=DQMC_bond(m,beta=1)
+slices=  mc.p.slices
+#initialize_stack(mc) # redundant ?!
+#build_stack(mc)
 
-run!(mc, sweeps=40, thermalization=40, verbose=true);
-observables(mc) # what observables do exist for that simulation?
+#=
+function DQMC_bond_uniform(m::M; seed::Int=-1, kwargs...) where M<:Model
+
+    p = DQMC_bondParameters(; kwargs...)
+    geltype = greenseltype(DQMC_bond, m)
+    conf = ones(2*m.L^m.dims, p.time_slices)
+    mc = DQMC_bond{M, typeof(conf), DQMC_bondStack{geltype,Float64}}()
+    mc.model = m
+    mc.p = p
+    mc.s = DQMC_bondStack{geltype,Float64}()
+    mc.K_xy = m.J*p.delta_tau
+    mc.K_tau = 0.5*log(coth(m.h*p.delta_tau))
+    init!(mc, seed=seed, conf=conf)
+    return mc
+end
+function init_uniform!(mc::DQMC_bond; seed::Real=-1, conf=ones(2*L^2,sl) )
+    seed == -1 || Random.seed!(seed)
+
+    mc.conf = conf
+    mc.hopping_mat = init_hopping_matrices(mc, mc.model)
+    init_diag_terms(mc, mc.model)
+    initialize_stack(mc)
+    mc.obs = prepare_observables(mc, mc.model)
+    mc.a = DQMC_bondAnalysis()
+    nothing
+end
+=#
+
+run!(mc, sweeps=10, thermalization=10, verbose=true);
+#observables(mc) # what observables do exist for that simulation?
 #m = mc.obs["m"] # magnetization
 #mean(m)
 #std(m) # one-sigma error
-greens = mc.obs["greens"]
-conf = mc.obs["confs"]
-phistogram(conf)
-#end
+#greens = mc.obs["greens"]
+#conf = mc.obs["confs"]
+#histogram(conf)
+#en
+
+heatmap(mc.conf)

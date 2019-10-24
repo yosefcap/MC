@@ -71,14 +71,15 @@ function DQMC_bond(m::M; seed::Int=-1, kwargs...) where M<:Model
 
     p = DQMC_bondParameters(; kwargs...)
     geltype = greenseltype(DQMC_bond, m)
-    conf = rand(DQMC_bond, m, p.slices)
+    conf = ones(Int8,2*m.L^m.dims, p.time_slices)#rand(DQMC_bond, m, p.time_slices)#
     mc = DQMC_bond{M, typeof(conf), DQMC_bondStack{geltype,Float64}}()
+    mc.conf = conf
     mc.model = m
     mc.p = p
     mc.s = DQMC_bondStack{geltype,Float64}()
     mc.K_xy = m.J*p.delta_tau
     mc.K_tau = 0.5*log(coth(m.h*p.delta_tau))
-    init!(mc, seed=seed, conf=conf)
+    init!(mc)# , seed=seed, conf=conf)#why is the conf initialized twice??
     return mc
 end
 
@@ -120,10 +121,10 @@ Base.show(io::IO, m::MIME"text/plain", mc::DQMC_bond) = print(io, mc)
 Initialize the determinant quantum Monte Carlo simulation `mc`.
 If `seed !=- 1` the random generator will be initialized with `Random.seed!(seed)`.
 """
-function init!(mc::DQMC_bond; seed::Real=-1, conf=rand(DQMC_bond,model(mc),nslices(mc)))
-    seed == -1 || Random.seed!(seed)
+function init!(mc::DQMC_bond)#; seed::Real=-1, conf=rand(DQMC_bond,model(mc),nslices(mc)))
+    #seed == -1 || Random.seed!(seed)
 
-    mc.conf = conf
+    #mc.conf = conf
     mc.hopping_mat = init_hopping_matrices(mc, mc.model)
     init_diag_terms(mc, mc.model)
     initialize_stack(mc)
@@ -140,7 +141,8 @@ Progress will be printed to `stdout` if `verbose=true` (default).
 """
 function run!(mc::DQMC_bond; verbose::Bool=true, sweeps::Int=mc.p.sweeps,
     thermalization=mc.p.thermalization)
-    total_sweeps = sweeps + thermalization
+    num_ch=mc.p.num_ch #number of checkerboards
+    total_sweeps = num_ch*(sweeps + thermalization)
 
     start_time = now()
     verbose && println("Started: ", Dates.format(start_time, "d.u yyyy HH:MM"))
@@ -224,13 +226,13 @@ function sweep_spatial(mc::DQMC_bond)
     m = model(mc)
     N = div(nsites(m),2) # number of bonds in a checkerboard
     bond_checkerboard = m.bond_checkerboard
-    cs = current_slice(mc)
+    slice = current_slice(mc)
     num_ch=mc.p.num_ch
-    time_slice = cld(cs,num_ch) # imagenary time
-    cb = mod1(cs,num_ch) # number of checkerboard in time slice
+    time_slice = cld(slice,num_ch) # imagenary time
+    cb = mod1(slice,num_ch) # number of checkerboard in time slice
     @inbounds for b in 1:N
         i = bond_checkerboard[1,b,cb] # index of bond i in checkerboard ch
-        detratio, ΔE_boson, Δ = propose_local(mc, m, i, time_slice, conf(mc))# y.c. added index j
+        detratio, ΔE_boson, Δ = propose_local(mc, m, i, slice, conf(mc))
         mc.a.prop_local += 1
         if abs(imag(detratio)) > 1e-6
             println("Did you expect a sign problem? imag. detratio: ",
