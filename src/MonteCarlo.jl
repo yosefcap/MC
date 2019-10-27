@@ -35,4 +35,8 @@ export DQMC_bond
 export greens
 export observables
 
+export initialize_stack #for test
+export build_stack #for test
+
+
 end # module

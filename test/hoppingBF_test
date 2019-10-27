@@ -3,11 +3,11 @@ using Test, Plots
 
 
 #@testset DQMC.jl begin
-m = HoppingBFModel(dims=2,L=8,J=1, h=0.2, α=0.1,μ=0.2)
+m = HoppingBFModel(dims=2,L=16,J=1, h=0.2, α=0.1,μ=0.2)
 mc=DQMC_bond(m,beta=1)
 slices=  mc.p.slices
-#initialize_stack(mc) # redundant ?!
-#build_stack(mc)
+initialize_stack(mc) # redundant ?!
+build_stack(mc)
 
 #=
 function DQMC_bond_uniform(m::M; seed::Int=-1, kwargs...) where M<:Model
@@ -37,7 +37,7 @@ function init_uniform!(mc::DQMC_bond; seed::Real=-1, conf=ones(2*L^2,sl) )
 end
 =#
 
-run!(mc, sweeps=10, thermalization=10, verbose=true);
+#run!(mc, sweeps=10, thermalization=10, verbose=true);
 #observables(mc) # what observables do exist for that simulation?
 #m = mc.obs["m"] # magnetization
 #mean(m)
