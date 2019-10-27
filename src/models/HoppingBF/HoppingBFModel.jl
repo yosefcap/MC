@@ -125,9 +125,9 @@ end
     greens = greens*(I-Λ*greens)
 
     conf[n, time_slice] *= -1
-    c = cosh(dtau*t*(1+α*conf[n, time_slice]))
-    s = sinh(dtau*t*(1+α*conf[n, time_slice]))
-    mc.hopping_mat[:,:,n,time_slice,cb] = [c s ; s c]
+    #c = cosh(dtau*t*(1+α*conf[n, time_slice]))
+    #s = sinh(dtau*t*(1+α*conf[n, time_slice]))
+    #mc.hopping_mat[:,:,n,time_slice,cb] = [c s ; s c]
 
     nothing
 end

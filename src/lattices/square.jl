@@ -73,7 +73,7 @@ function build_b_neighbortable(::Type{SquareLattice}, lattice, bond_lattice, L)
     b_dr = circshift(bond_lattice[:,:,2],(1,-1))
     b_n1 = vcat(bond_index[:]',lattice[:]',right[:]',b_ul[:]',b_ur[:]',b_dl[:]',b_dr[:]')
     for i=1:div(L,2)
-        bond_checkerboard[:,(i-1)*L+1:i*L,1]=b_n1[1:3,2*(i-1)*L+1:(2*i-1)*L]#horizontal (right) add column
+        bond_checkerboard[:,(i-1)*L+1:i*L,1]=b_n1[1:3,2*(i-1)*L+1:(2*i-1)*L]#horizontal (right) odd column
         bond_checkerboard[:,(i-1)*L+1:i*L,2]=b_n1[1:3,(2*i-1)*L+1:2*i*L]#horizontal (right) even column
     end
     bond_index = L^2+1:2*L^2
@@ -84,7 +84,7 @@ function build_b_neighbortable(::Type{SquareLattice}, lattice, bond_lattice, L)
     b_dr = bond_lattice[:,:,1]
     b_n2 = vcat(bond_index[:]',lattice[:]',up[:]',b_ul[:]',b_ur[:]',b_dl[:]',b_dr[:]')
     for i=1:num_check
-        bond_checkerboard[:,i,3]=b_n2[1:3,2*i-1] #vertical (up) add
+        bond_checkerboard[:,i,3]=b_n2[1:3,2*i-1] #vertical (up) odd
         bond_checkerboard[:,i,4]=b_n2[1:3,2*i] # vertical (up) even
     end
     bond_info=cat(b_n1,b_n2,dims=2)

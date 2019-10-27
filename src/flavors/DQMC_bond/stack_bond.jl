@@ -96,6 +96,7 @@ function initialize_stack(mc::DQMC_bond)
   # mc.s.hopping_matrix_exp_inv = zeros(HoppingEltype, flv*N, flv*N)
   nothing
 end
+#=
 """
  initializing the blocks of checkerboard hopping matrices.
 The matrices are 2×2 blocks of [c s ; s c ]
@@ -124,7 +125,27 @@ function init_hopping_matrices(mc::DQMC_bond, m::Model)
     end
     return hopping_mat
 end
+=#
+"""
+ initializing the blocks of checkerboard hopping matrices.
+The matrices are 2×2 blocks of [c s ; s c ]
+with c=cosh(Δτ*t(1+ασ)) , s=sinh(Δτ*t(1+ασ))
+"""
+function init_hopping_matrices(mc::DQMC_bond, m::Model)
 
+    dtau = mc.p.delta_tau
+    t = m.t
+    α = m.α
+
+    c_u = cosh(dtau*t*(1+α))
+    s_u = sinh(dtau*t*(1+α))
+    mc.hopping_term_up = [c_u s_u ; s_u c_u]
+
+    c_d = cosh(dtau*t*(1-α))
+    s_d = sinh(dtau*t*(1-α))
+    mc.hopping_term_down = [c_d  s_d ; s_d  c_d]
+
+end
 function init_diag_terms(mc::DQMC_bond, m::Model)
     dtau = mc.p.delta_tau
     μ    = m.μ

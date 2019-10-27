@@ -1,14 +1,15 @@
 using MonteCarlo
-using Test, Plots
+using Test, Plots, FFTW
 
 
 #@testset DQMC.jl begin
-m = HoppingBFModel(dims=2,L=16,J=1, h=0.2, α=0.1,μ=0.2)
-mc=DQMC_bond(m,beta=1)
+m = HoppingBFModel(dims=2,L=50,J=1, h=0.2, α=0.1,μ=0.2)
+mc=DQMC_bond(m,beta=10)
 slices=  mc.p.slices
 initialize_stack(mc) # redundant ?!
 build_stack(mc)
-
+propagate(mc)
+#calculate_greens(mc)
 #=
 function DQMC_bond_uniform(m::M; seed::Int=-1, kwargs...) where M<:Model
 
@@ -47,4 +48,9 @@ end
 #histogram(conf)
 #en
 
-heatmap(mc.conf)
+#heatmap(mc.s.greens)
+LL=50
+gg=reshape(mc.s.greens,(LL,LL,LL,LL))
+kk=fft(gg[1,1,:,:])
+heatmap(real(kk))
+heatmap(imag(kk))

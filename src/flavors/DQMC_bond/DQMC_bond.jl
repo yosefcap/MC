@@ -44,7 +44,9 @@ mutable struct DQMC_bond{M<:Model, ConfType<:Any,
             Stack<:AbstractDQMC_bondStack} <: MonteCarloFlavor
     model::M
     conf::ConfType
-    hopping_mat::Array{Float64,5}
+    #hopping_mat::Array{Float64,5}
+    hopping_term_up:: Array{Float64,2}
+    hopping_term_down:: Array{Float64,2}
     diag_terms::Array{Float64,1} #diagonal terms including chemical potential and onsite disorder
     diag_terms_inv::Array{Float64,1} #inverse diagonal terms including chemical potential and onsite disorder
     s::Stack
@@ -125,7 +127,8 @@ function init!(mc::DQMC_bond)#; seed::Real=-1, conf=rand(DQMC_bond,model(mc),nsl
     #seed == -1 || Random.seed!(seed)
 
     #mc.conf = conf
-    mc.hopping_mat = init_hopping_matrices(mc, mc.model)
+    #mc.hopping_mat = init_hopping_matrices(mc, mc.model)
+    init_hopping_matrices(mc, mc.model)
     init_diag_terms(mc, mc.model)
     initialize_stack(mc)
     mc.obs = prepare_observables(mc, mc.model)
