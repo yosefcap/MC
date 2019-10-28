@@ -3,7 +3,7 @@ using Test, Plots, FFTW
 
 
 #@testset DQMC.jl begin
-m = HoppingBFModel(dims=2,L=50,J=1, h=0.2, α=0.1,μ=0.2)
+m = HoppingBFModel(dims=2,L=20,J=1, h=0.2, α=0.,μ=0.)
 mc=DQMC_bond(m,beta=10)
 slices=  mc.p.slices
 initialize_stack(mc) # redundant ?!
@@ -49,7 +49,7 @@ end
 #en
 
 #heatmap(mc.s.greens)
-LL=50
+LL=20
 gg=reshape(mc.s.greens,(LL,LL,LL,LL))
 kk=fft(gg[1,1,:,:])
 heatmap(real(kk))

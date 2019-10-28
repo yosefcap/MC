@@ -30,10 +30,6 @@ function multiply_slice_matrix_left!(mc::DQMC_bond,  slice::Int, M::AbstractMatr
 	    end
 	end
 
-
-
-
-
     nothing
 end
 function multiply_slice_matrix_right!(mc::DQMC_bond,  slice::Int, M::AbstractMatrix{T}) where T<:Number
