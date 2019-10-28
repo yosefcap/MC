@@ -3,13 +3,13 @@ using Test, Plots, FFTW
 
 
 #@testset DQMC.jl begin
-m = HoppingBFModel(dims=2,L=20,J=1, h=0.2, α=0.,μ=0.)
-mc=DQMC_bond(m,beta=10)
+m = HoppingBFModel(dims=2,L=10,J=1, h=0.2, α=0.,μ=0.)
+mc=DQMC_bond(m,beta=5)
 slices=  mc.p.slices
 initialize_stack(mc) # redundant ?!
 build_stack(mc)
 propagate(mc)
-#calculate_greens(mc)
+calculate_greens(mc)
 #=
 function DQMC_bond_uniform(m::M; seed::Int=-1, kwargs...) where M<:Model
 
@@ -46,11 +46,26 @@ end
 #greens = mc.obs["greens"]
 #conf = mc.obs["confs"]
 #histogram(conf)
-#en
+#end
 
 #heatmap(mc.s.greens)
-LL=20
+LL=10
+
+bond_ch = mc.model.bond_checkerboard
+N=size(bond_ch,2)
+HH=zeros(100,100)
+for cb in 1:4
+    for n in 1:N
+        i = bond_ch[2,n,cb]
+        j = bond_ch[3,n,cb]
+        HH[i,j]=1
+        HH[j,i]=1
+    end
+end
+
 gg=reshape(mc.s.greens,(LL,LL,LL,LL))
-kk=fft(gg[1,1,:,:])
+kk=fft(gg[:,:,1,1])
+
+#kk=fft(gg)
 heatmap(real(kk))
 heatmap(imag(kk))
