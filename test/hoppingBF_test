@@ -1,5 +1,5 @@
 using MonteCarlo
-using Test, Plots, FFTW
+using Test, Plots, FFTW, LinearAlgebra
 
 
 #@testset DQMC.jl begin
@@ -54,6 +54,10 @@ LL=10
 bond_ch = mc.model.bond_checkerboard
 N=size(bond_ch,2)
 HH=zeros(100,100)
+H1=zeros(100,100)
+H2=zeros(100,100)
+H3=zeros(100,100)
+H4=zeros(100,100)
 for cb in 1:4
     for n in 1:N
         i = bond_ch[2,n,cb]
@@ -63,9 +67,72 @@ for cb in 1:4
     end
 end
 
+    for n in 1:N
+        i = bond_ch[2,n,1]
+        j = bond_ch[3,n,1]
+        H1[i,j]=1
+        H1[j,i]=1
+        i = bond_ch[2,n,2]
+        j = bond_ch[3,n,2]
+        H2[i,j]=1
+        H2[j,i]=1
+
+        i = bond_ch[2,n,3]
+        j = bond_ch[3,n,3]
+        H3[i,j]=1
+        H3[j,i]=1
+
+        i = bond_ch[2,n,4]
+        j = bond_ch[3,n,4]
+        H4[i,j]=1
+        H4[j,i]=1
+    end
+
+
 gg=reshape(mc.s.greens,(LL,LL,LL,LL))
 kk=fft(gg[:,:,1,1])
 
 #kk=fft(gg)
 heatmap(real(kk))
 heatmap(imag(kk))
+τ=0.01
+GG=exp(τ*H1)*exp(τ*H3)*exp(τ*H2)*exp(τ*H4)
+GG1=exp(τ*HH)
+
+M=zeros(100,100)+I
+#hopping_mat = mc.hopping_term_up
+hopping_mat = [cosh(τ) sinh(τ) ; sinh(τ) cosh(τ)]
+bond_ch = mc.model.bond_checkerboard
+N=size(bond_ch,2) #number of bonds in checkerboard
+num_ch=mc.p.num_ch
+#for cb in 1:4
+#cb=1
+
+
+#=    if cb==4
+        diag_terms = mc.diag_terms
+        M = M.*diag_terms
+    end
+=#
+    #@inbounds @views begin
+        for n in 1:N
+            for cb in 1:4
+
+            i = bond_ch[2,n,cb]
+            j = bond_ch[3,n,cb]
+            bond_index = bond_ch[1,n,cb]
+            #hopping_mat = mc.hopping_term_up
+
+
+                B =hopping_mat*[M[i,:]' ; M[j,:]']
+
+
+            M[i,:] = B[1,:]
+            M[j,:] = B[2,:]
+
+
+        end
+        end
+    #end
+
+#end
