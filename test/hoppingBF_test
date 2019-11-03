@@ -1,15 +1,19 @@
 using MonteCarlo
 using Test, Plots, FFTW, LinearAlgebra
 
-
+L=20
 #@testset DQMC.jl begin
-m = HoppingBFModel(dims=2,L=10,J=1, h=0.2, α=0.,μ=0.)
-mc=DQMC_bond(m,beta=5)
+m = HoppingBFModel(dims=2,L=20,J=1, h=0.2, α=0.,μ=0.)
+mc=DQMC_bond(m,beta=10)
 slices=  mc.p.slices
 initialize_stack(mc) # redundant ?!
 build_stack(mc)
+#=
+for i in 1:10
 propagate(mc)
-calculate_greens(mc)
+
+end
+=#
 #=
 function DQMC_bond_uniform(m::M; seed::Int=-1, kwargs...) where M<:Model
 
@@ -49,6 +53,7 @@ end
 #end
 
 #heatmap(mc.s.greens)
+#=
 LL=10
 
 bond_ch = mc.model.bond_checkerboard
@@ -136,3 +141,11 @@ num_ch=mc.p.num_ch
     #end
 
 #end
+=#
+calculate_greens(mc)
+gg=reshape(mc.s.greens,(L,L,L,L))
+kk=fftshift(fft(gg[:,:,1,1]))
+
+#kk=fft(gg)
+heatmap(real(kk))
+heatmap(imag(kk))

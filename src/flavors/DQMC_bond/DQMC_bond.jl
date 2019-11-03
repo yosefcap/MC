@@ -22,7 +22,7 @@ Parameters of determinant quantum Monte Carlo (DQMC)
     num_ch::Int = 4
     sweeps::Int = num_ch*25 # number of sweeps (after thermalization)
     all_checks::Bool = true # e.g. check if propagation is stable/instable
-    safe_mult::Int = num_ch*1
+    safe_mult::Int = num_ch*2
 
     delta_tau::Float64 = 0.1
     beta::Float64
