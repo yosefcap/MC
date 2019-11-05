@@ -25,8 +25,8 @@ function multiply_slice_matrix_left!(mc::DQMC_bond,  slice::Int, M::AbstractMatr
                 B =hopping_mat*[M[i,:]' ; M[j,:]']
 
 
-	        M[i,:] = B[1,:]
-	        M[j,:] = B[2,:]
+	        M[i,:] .= B[1,:]
+	        M[j,:] .= B[2,:]
 	    end
 	end
 

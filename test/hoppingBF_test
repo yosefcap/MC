@@ -1,10 +1,10 @@
-using MonteCarlo
+using MonteCarlo,Revise
 using Test, Plots, FFTW, LinearAlgebra
 
-L=20
+L=2
 #@testset DQMC.jl begin
-m = HoppingBFModel(dims=2,L=20,J=1, h=0.2, α=0.,μ=0.)
-mc=DQMC_bond(m,beta=10)
+m = HoppingBFModel(dims=2,L=2,J=1, h=0.2, α=0.,μ=1.)
+mc=DQMC_bond(m,beta=1)
 slices=  mc.p.slices
 initialize_stack(mc) # redundant ?!
 build_stack(mc)
@@ -149,3 +149,41 @@ kk=fftshift(fft(gg[:,:,1,1]))
 #kk=fft(gg)
 heatmap(real(kk))
 heatmap(imag(kk))
+
+slice=3
+
+M=Matrix{Float64}(I, 4,4)
+    bond_ch = mc.model.bond_checkerboard
+    N=size(bond_ch,2) #number of bonds in checkerboard
+    num_ch=mc.p.num_ch
+    time_slice = cld(slice,num_ch) # imagenary time
+    cb = mod1(slice,num_ch) # number of checkerboard in time slice
+
+	if cb==4
+		diag_terms = mc.diag_terms
+		M = M.*diag_terms
+	end
+
+    @inbounds @views begin
+	    for n in 1:N
+	        i = bond_ch[2,n,cb]
+	        j = bond_ch[3,n,cb]
+            bond_index = bond_ch[1,n,cb]
+            if mc.conf[bond_index,time_slice]==1
+                hopping_mat = mc.hopping_term_up
+            else
+                hopping_mat=mc.hopping_term_down
+            end
+
+                B =hopping_mat*[M[i,:]' ; M[j,:]']
+
+
+	        M[i,:] .= B[1,:]
+	        M[j,:] .= B[2,:]
+	    end
+	end
+
+
+
+
+Juno.@enter build_stack(mc)

@@ -39,5 +39,5 @@ export initialize_stack #for test
 export build_stack #for test
 export calculate_greens#for test
 export  propagate #for test
-
+#export multiply_slice_matrix_left!
 end # module
