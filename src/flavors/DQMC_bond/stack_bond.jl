@@ -356,3 +356,32 @@ function propagate(mc::DQMC_bond)
   end
   nothing
 end
+
+#=
+function build_stack_stable(mc::DQMC_bond)
+
+  @inbounds for i in 1:length(mc.s.ranges)
+        add_slice_sequence_left(mc,i)
+    end
+
+  mc.s.current_slice = mc.p.slices + 1
+  mc.s.direction = -1
+
+  nothing
+end
+"""
+Updates stack[idx+1] based on stack[idx]
+"""
+function add_slice_sequence_left_stable(mc::DQMC_bond, idx::Int)
+  copyto!(mc.s.curr_U, mc.s.u_stack[:, :, idx])
+
+  # println("Adding slice seq left $idx = ", mc.s.ranges[idx])
+  for slice in mc.s.ranges[idx]
+          multiply_slice_matrix_left!(mc, slice, mc.s.curr_U)
+ end
+
+  mc.s.curr_U *= spdiagm(0 => mc.s.d_stack[:, idx])
+  mc.s.u_stack[:, :, idx + 1], mc.s.d_stack[:, idx + 1], T = udt(mc.s.curr_U)
+  mc.s.t_stack[:, :, idx + 1] =  T * mc.s.t_stack[:, :, idx]
+end
+=#
