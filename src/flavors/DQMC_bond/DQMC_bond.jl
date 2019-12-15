@@ -24,7 +24,7 @@ Parameters of determinant quantum Monte Carlo (DQMC)
     all_checks::Bool = true # e.g. check if propagation is stable/instable
     safe_mult::Int = num_ch*1
 
-    delta_tau::Float64 = 0.1
+    delta_tau::Float64 = 0.01
     beta::Float64
 
     time_slices::Int = beta / delta_tau
