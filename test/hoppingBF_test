@@ -1,4 +1,4 @@
-using MonteCarlo,Revise
+using MonteCarlo#,Revise
 using Test, Plots, FFTW, LinearAlgebra
 
 L=11
@@ -13,6 +13,8 @@ A=calculate_greens(mc)
 gg=reshape(A,(L,L,L,L))
 kk=fft(gg[:,:,1,1])
 heatmap(real(kk))
+ffff
+
 #=    N=mc.model.l.sites
     M=Matrix{Float64}(I, N,N)
   for slice in 1:4#idx
