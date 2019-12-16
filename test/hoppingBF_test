@@ -13,7 +13,7 @@ A=calculate_greens(mc)
 gg=reshape(A,(L,L,L,L))
 kk=fft(gg[:,:,1,1])
 heatmap(real(kk))
-ffff
+dfgh
 
 #=    N=mc.model.l.sites
     M=Matrix{Float64}(I, N,N)
