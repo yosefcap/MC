@@ -8,7 +8,7 @@ function multiply_slice_matrix_left!(mc::DQMC_bond,  slice::Int, M::AbstractMatr
 
 	if cb==4
 		diag_terms = mc.diag_terms
-		M = M.*diag_terms
+		M .= M.*diag_terms
 	end
 
     @inbounds @views begin
