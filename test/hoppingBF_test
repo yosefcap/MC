@@ -1,19 +1,20 @@
 using MonteCarlo#,Revise
 using Test, Plots, FFTW, LinearAlgebra
 
-L=11
+L=2
 #@testset DQMC.jl begin
-m = HoppingBFModel(dims=2,L=11,J=1, h=0., α=0.,μ=0)
-mc=DQMC_bond(m,beta=10)
+m = HoppingBFModel(dims=2,L=2,J=1, h=0., α=0.,μ=0)
+mc=DQMC_bond(m,beta=0.01)
 slices=  mc.p.slices
 initialize_stack(mc) # redundant ?!
 build_stack(mc)
-propagate(mc)
-A=calculate_greens(mc)
-gg=reshape(A,(L,L,L,L))
-kk=fft(gg[:,:,1,1])
-heatmap(real(kk))
-dfgh
+gfds
+#propagate(mc)
+#A=calculate_greens(mc)
+#gg=reshape(A,(L,L,L,L))
+#kk=fft(gg[:,:,1,1])
+#heatmap(real(kk))
+
 
 #=    N=mc.model.l.sites
     M=Matrix{Float64}(I, N,N)
