@@ -8,7 +8,7 @@ mc=DQMC_bond(m,beta=0.01)
 slices=  mc.p.slices
 initialize_stack(mc) # redundant ?!
 build_stack(mc)
-gfds
+
 #propagate(mc)
 #A=calculate_greens(mc)
 #gg=reshape(A,(L,L,L,L))
