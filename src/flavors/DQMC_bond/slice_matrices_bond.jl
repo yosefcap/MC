@@ -57,7 +57,7 @@ function multiply_slice_matrix_right!(mc::DQMC_bond,  slice::Int, M::AbstractMat
 	end
 	if cb==4
 		diag_terms = mc.diag_terms
-		M = M.*diag_terms'
+		M .= M.*diag_terms'
 	end
     nothing
 end
@@ -90,7 +90,7 @@ function multiply_slice_matrix_inv_left!(mc::DQMC_bond,  slice::Int, M::Abstract
 	end
 	if cb==4
 		diag_terms_inv = mc.diag_terms_inv
-		M = M.*diag_terms_inv
+		M .= M.*diag_terms_inv
 	end
     nothing
 end
@@ -102,7 +102,7 @@ function multiply_slice_matrix_inv_right!(mc::DQMC_bond, slice::Int, M::Abstract
     cb = mod1(slice,num_ch) # number of checkerboard in time slice
     if cb==4
 		diag_terms_inv = mc.diag_terms_inv
-		M = M.*diag_terms_inv'
+		M .= M.*diag_terms_inv'
 	end
 	h_inv = zeros(Float64,2,2)
     @inbounds @views begin
@@ -134,7 +134,7 @@ function multiply_daggered_slice_matrix_left!(mc::DQMC_bond, slice::Int, M::Abst
     cb = mod1(slice,num_ch) # number of checkerboard in time slice
 	if cb==4
 		diag_terms = mc.diag_terms
-		M = M.*diag_terms
+		M .= M.*diag_terms
 	end
     @inbounds @views begin
 	    for n in 1:N
@@ -176,7 +176,7 @@ function multiply_daggered_slice_matrix_right!(mc::DQMC_bond,  slice::Int, M::Ab
 	end
 	if cb==4
 		diag_terms = mc.diag_terms
-		M = M.*diag_terms'
+		M .= M.*diag_terms'
 	end
     nothing
 end

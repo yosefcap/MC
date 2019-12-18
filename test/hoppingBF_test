@@ -1,15 +1,18 @@
 using MonteCarlo#,Revise
 using Test, Plots, FFTW, LinearAlgebra
 
-L=2
+
 #@testset DQMC.jl begin
-m = HoppingBFModel(dims=2,L=2,J=1, h=0., α=0.,μ=0)
+m = HoppingBFModel(dims=2,L=2,J=1, h=0., α=1.,μ=0)
 mc=DQMC_bond(m,beta=0.01)
 slices=  mc.p.slices
+L=mc.model.L
+dims=mc.model.dims
+mc.conf=rand(DQMC_bond, m, mc.p.time_slices)#ones(Int8,2*L^dims, mc.p.time_slices)
 initialize_stack(mc) # redundant ?!
 build_stack(mc)
-gfds
-#propagate(mc)
+
+propagate(mc)
 #A=calculate_greens(mc)
 #gg=reshape(A,(L,L,L,L))
 #kk=fft(gg[:,:,1,1])
