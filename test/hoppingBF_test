@@ -11,8 +11,8 @@ dims=mc.model.dims
 mc.conf=rand(DQMC_bond, m, mc.p.time_slices)#ones(Int8,2*L^dims, mc.p.time_slices)
 initialize_stack(mc) # redundant ?!
 build_stack(mc)
-
 propagate(mc)
+bvcx
 #A=calculate_greens(mc)
 #gg=reshape(A,(L,L,L,L))
 #kk=fft(gg[:,:,1,1])
