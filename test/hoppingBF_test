@@ -3,7 +3,7 @@ using Test, Plots, FFTW, LinearAlgebra
 
 
 #@testset DQMC.jl begin
-m = HoppingBFModel(dims=2,L=2,J=1, h=0., α=1.,μ=0)
+m = HoppingBFModel(dims=2,L=4,J=1, h=0., α=1.,μ=0)
 mc=DQMC_bond(m,beta=0.01)
 slices=  mc.p.slices
 L=mc.model.L
@@ -12,7 +12,35 @@ mc.conf=rand(DQMC_bond, m, mc.p.time_slices)#ones(Int8,2*L^dims, mc.p.time_slice
 initialize_stack(mc) # redundant ?!
 build_stack(mc)
 propagate(mc)
-bgr
+#H=get_hamiltonian(mc)
+
+#function get_hamiltonian(mc::DQMC_bond)
+    conf = mc.conf
+    bond_ch = mc.model.bond_checkerboard
+    L=mc.model.L
+    T=mc.p.time_slices
+    α=mc.model.α
+    H = zeros(L^2,L^2,T)
+    N=size(bond_ch,2) #number of bonds in checkerboard
+    num_ch=mc.p.num_ch
+    #time_slice = cld(slices,num_ch) # imagenary time
+
+    for tt in 1:T
+        for n in 1:N
+            for cb in 1:num_ch
+                i = bond_ch[2,n,cb]
+                j = bond_ch[3,n,cb]
+                bond_index = bond_ch[1,n,cb]
+                H[i,j,tt] += -1-α*conf[bond_index,tt]
+                H[j,i,tt] += -1-α*conf[bond_index,tt]
+            end
+        end
+    end
+#    return H
+#end
+τ =  mc.p.delta_tau
+g_test = inv(Matrix{Float64}(I, L^2,L^2)+exp(-τ*H[:,:,1]))
+
 #A=calculate_greens(mc)
 #gg=reshape(A,(L,L,L,L))
 #kk=fft(gg[:,:,1,1])
